@@ -343,20 +343,37 @@ function confirmPayment(){
 }
 
 function addProduct(){
-  const index=clientSelect.value;
-  if(index==="") return alert("❗ اختر عميل أولاً");
-  const name=prompt("أدخل اسم المنتج:");
-  if(!name) return;
-  const qty=Number(prompt("أدخل الكمية:"));
-  if(isNaN(qty)||qty<=0) return alert("الكمية غير صحيحة");
-  const price=Number(prompt("أدخل السعر:"));
-  if(isNaN(price)||price<=0) return alert("السعر غير صحيح");
-  const total=qty*price;
-  clients[index].products.push({name, qty, price, total});
-  clients[index].total+=total;
-  localStorage.setItem("clients", JSON.stringify(clients));
-  showClientDetails();
+  const index = clientSelect.value;
+  if(index === "") return alert("❗ اختر عميل أولاً");
+  const client = clients[index];
+
+  // نسخ المنتجات الحالية للعميل
+  newClientProducts = [...client.products.map(p => ({...p}))];
+
+  // عرض صفحة إضافة عميل
+  clientSection.classList.add("hidden");
+  addClientSection.classList.remove("hidden");
+  reportSection.classList.add("hidden");
+
+  // وضع اسم العميل في الأعلى
+  document.getElementById("newClientName").value = client.name;
+
+  // عرض المنتجات الحالية
+  renderNewClientTable();
+
+  // عند الحفظ، نحدث العميل الحالي بدل إنشاء واحد جديد
+  document.querySelector("#addClientSection .actions button:first-child").onclick = function() {
+    if(newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
+    const total = newClientProducts.reduce((sum,p)=>sum+p.total,0);
+    client.products = newClientProducts;
+    client.total = total;
+    localStorage.setItem("clients", JSON.stringify(clients));
+    alert("✅ تم تحديث منتجات العميل بنجاح");
+    showClientSection();
+  };
 }
+
+
 
 function deleteClient(){
   const index=clientSelect.value;
@@ -396,16 +413,39 @@ function deleteProduct(clientIndex, productIndex){
 
 
 // إضافة عميل جديد
-function addProductToNewClient(){
-  const name=document.getElementById("productName").value.trim();
-  const qty=Number(document.getElementById("productQty").value);
-  const price=Number(document.getElementById("productPrice").value);
-  if(!name||qty<=0||price<=0) return alert("أدخل بيانات صحيحة للمنتج");
-  newClientProducts.push({name, qty, price, total: qty*price});
+function addProductToNewClient() {
+  const name = document.getElementById("productName").value.trim();
+  const qty = Number(document.getElementById("productQty").value);
+  const price = Number(document.getElementById("productPrice").value);
+
+  if (!name || qty <= 0 || price <= 0) return alert("أدخل بيانات صحيحة للمنتج");
+
+  const product = { name, qty, price, total: qty * price };
+  newClientProducts.push(product);
+
+  // تحديث الجدول مباشرة
   renderNewClientTable();
-  document.getElementById("productName").value="";
-  document.getElementById("productQty").value="";
-  document.getElementById("productPrice").value="";
+
+  // إعادة ضبط الحقول
+  document.getElementById("productName").value = "";
+  document.getElementById("productQty").value = "";
+  document.getElementById("productPrice").value = "";
+
+  // تحديث العميل الحالي مباشرة إذا كان موجود
+  const clientName = document.getElementById("newClientName").value.trim();
+  const clientIndex = clients.findIndex(c => c.name === clientName);
+
+  if (clientIndex !== -1) { // العميل موجود مسبقًا
+    const client = clients[clientIndex];
+    client.products = [...newClientProducts];
+    client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
+    localStorage.setItem("clients", JSON.stringify(clients));
+
+    // تحديث الجدول في صفحة العميل
+    if (clientSelect.value == clientIndex) {
+      showClientDetails();
+    }
+  }
 }
 
 function renderNewClientTable(){

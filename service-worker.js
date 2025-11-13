@@ -1,11 +1,11 @@
 const cacheName = "my-site-cache-v1";
 const filesToCache = [
   "/",
-  "/index.html",
-  "/add-Client.html",
-  "/report.html",
-  "/manifest.json",
-  "/icon.png"
+  "index.html",
+  "add-Client.html",
+  "report.html",
+  "manifest.json",
+  "icon.png"
 ];
 
 // أثناء التثبيت (install) لأول مرة

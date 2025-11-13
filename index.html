@@ -373,13 +373,27 @@ function deleteClient(){
 }
 
 function deleteProduct(clientIndex, productIndex){
-  if(confirm("هل أنت متأكد من حذف هذا المنتج؟")){
-    clients[clientIndex].total -= clients[clientIndex].products[productIndex].total;
-    clients[clientIndex].products.splice(productIndex,1);
+  const client = clients[clientIndex];
+  const product = client.products[productIndex];
+  
+  // حساب المبلغ المدفوع للمنتج
+  const productPaid = Math.min(product.total, client.paid);
+
+  let confirmMsg = "هل أنت متأكد من حذف هذا المنتج؟";
+  if(productPaid > 0){
+    confirmMsg += `\n⚠️ لاحظ: العميل دفع ${productPaid} جنيه من هذا المنتج.`;
+  }
+
+  if(confirm(confirmMsg)){
+    // تحديث المبلغ الكلي والمدفوع
+    client.total -= product.total;
+    if(client.paid > client.total) client.paid = client.total; // تعديل المدفوع إذا صار أكبر من الإجمالي
+    client.products.splice(productIndex,1);
     localStorage.setItem("clients", JSON.stringify(clients));
     showClientDetails();
   }
 }
+
 
 // إضافة عميل جديد
 function addProductToNewClient(){
@@ -420,6 +434,13 @@ function saveClient(){
 }
 
 showClientSection();
+
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('Service Worker registered successfully'))
+    .catch(err => console.log('Service Worker registration failed:', err));
+}
 </script>
 </body>
 </html>

@@ -57,6 +57,7 @@
   }
   .btnDelete{
     border: none;
+    background: none;
   }
   table {
     width: 100%;
@@ -92,6 +93,7 @@
     justify-content: center;
     flex-wrap: wrap;
     margin-top: 10px;
+    align-items: center;
   }
   .payment-row input {
     width: 150px;
@@ -101,6 +103,25 @@
     .payment-row { flex-direction: column; }
     input { width: 100%; }
   }
+  .actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .actions button:first-child {
+    align-self: flex-end; /* حفظ العميل على الشمال */
+  }
+  .actions button:last-child {
+    align-self: flex-start; /* رجوع على اليمين */
+  }
+}
+
 </style>
 </head>
 <body>
@@ -169,8 +190,12 @@
     </table>
 
     <div class="total">الإجمالي الكلي: <span id="totalPrice">0</span> جنيه</div>
-    <button onclick="saveClient()">💾 حفظ العميل</button>
-    <button onclick="showClientSection()">⬅️ رجوع</button>
+    <!-- في قسم إضافة عميل -->
+<div class="actions">
+  <button onclick="saveClient()">💾 حفظ العميل</button>
+  <button onclick="showClientSection()">⬅️ رجوع</button>
+</div>
+
   </div>
 
   <!-- تقرير العميل -->

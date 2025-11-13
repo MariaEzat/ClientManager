@@ -19,13 +19,13 @@ self.addEventListener("install", (event) => {
 
 // الاستجابة للطلبات (fetch)
 self.addEventListener("fetch", (event) => {
+  // استثناء الطلبات اللي مش HTML/JS/CSS
+  if (event.request.method !== "GET") return;
+
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // لو موجودة فى الكاش نرجعها، لو لأ نحاول نجيبها من النت
-      return response || fetch(event.request);
-    }).catch(() => {
-      // لو أوفلاين ومفيش الملف، نرجع index.html
-      return caches.match("/index.html");
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request).catch(() => caches.match("/index.html"));
     })
   );
 });
+

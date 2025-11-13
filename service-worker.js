@@ -4,8 +4,7 @@ const filesToCache = [
   "/index.html",
   "/add-Client.html",
   "/report.html",
-  "/styles.css", // لو عندك ملف CSS
-  "/script.js"   // لو عندك ملف JS
+ 
 ];
 
 // لما الموقع يفتح أول مرة بيتخزن فى الكاش

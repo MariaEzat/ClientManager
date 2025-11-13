@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة العملاء والمبيعات</title>
+<style>
+  body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  h1 {
+    text-align: center;
+    color: #3a6ea5;
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+  .client-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .client-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .deleteSelectedBtn{
+    border: none;
+  }
+  .client-row select {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  .addClient {
+    background-color: #3a6ea5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    white-space: nowrap;
+  }
+  .addClient:hover {
+    background-color: #2f5c88;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  th, td {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 15px;
+  }
+  th {
+    background-color: #3a6ea5;
+    color: white;
+  }
+  .summary {
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+    background-color: #f9fbfd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+  }
+  .message {
+    background-color: #eef5ff;
+    border-radius: 10px;
+    padding: 10px;
+    margin-top: 10px;
+    text-align: center;
+    color: #2f5c88;
+    font-weight: bold;
+  }
+  .add-product-btn {
+    background-color: #3a6ea5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+  }
+  .add-product-btn:hover {
+    background-color: #2f5c88;
+    transform: translateY(-1px);
+  }
+  .payment-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+  }
+  .payment-row label {
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .payment-row input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 150px;
+    text-align: center;
+  }
+  .pay-btn {
+    background-color: #3a6ea5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .pay-btn:hover {
+    background-color: #2f5c88;
+    transform: translateY(-1px);
+  }
+  .delete-btn {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.3s;
+  }
+  .delete-btn:hover {
+    background-color: #c9302c;
+  }
+/* للنسخة الصغيرة للشاشات */
+@media (max-width: 600px) {
+  .client-row select {
+    width: 100%;
+  }
+  .client-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .client-buttons button {
+    flex: 1;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📋 إدارة العملاء والمبيعات</h1>
+
+  <label class="client-label">اختيار عميل:</label>
+ <div class="client-row">
+  <select id="clientSelect" onchange="showClientDetails()">
+    <option value="">-- اختار عميل --</option>
+  </select>
+</div>
+<div class="client-buttons">
+  <button onclick="window.location.href='add-Client.html'" class="addClient">➕ إضافة عميل</button>
+  <button onclick="deleteClient()" class="delete-btn">🗑️ حذف العميل</button>
+</div>
+
+
+  <table id="clientTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>المنتج</th>
+        <th>الكمية</th>
+        <th>السعر</th>
+        <th>الإجمالي</th>
+        <th>حذف</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div style="margin-top: 15px; display:none;" id="addProductDiv">
+    <button class="add-product-btn" onclick="addProduct()">➕ إضافة منتجات جديدة للعميل</button>
+  </div>
+
+  <div class="summary" id="summary" style="display:none;">
+    <p>الإجمالي الكلي: <span id="total">0</span> جنيه</p>
+    <p>إجمالي المدفوع: <span id="totalPaid">0</span> جنيه</p>
+    <p>المتبقي: <span id="remaining">0</span> جنيه</p>
+    
+    <div class="payment-row">
+      <label>المبلغ الجديد المدفوع:</label>
+      <input type="number" id="paid" placeholder="اكتب المبلغ المدفوع">
+      <button onclick="confirmPayment()" class="pay-btn">تم الدفع ✅</button>
+    </div>
+
+    <div class="message" id="paymentMessage" style="display:none;"></div>
+  </div>
+
+  <div style="text-align:center; margin-top:25px;">
+    <button 
+      onclick="
+        if(!clientSelect.value) {
+          alert('❗ يجب اختيار عميل أولاً');
+        } else {
+          localStorage.setItem('reportClientIndex', clientSelect.value);
+          window.location.href='report.html';
+        }
+      "
+      style="
+        background: linear-gradient(90deg, #3a6ea5, #2f5c88);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      "
+      onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';"
+      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';"
+    >
+      📊 عرض التقرير
+    </button>
+  </div>
+
+</div>
+
+<script>
+  const clientSelect = document.getElementById("clientSelect");
+  let clients = JSON.parse(localStorage.getItem("clients") || "[]");
+
+  function loadClients(list = clients) {
+    clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
+    list.forEach((c, index) => {
+      const opt = document.createElement("option");
+      opt.value = index;
+      opt.textContent = c.name;
+      clientSelect.appendChild(opt);
+    });
+  }
+
+  loadClients();
+
+  function showClientDetails() {
+    const index = clientSelect.value;
+    if(index === "") return;
+
+    const client = clients[index];
+    const tbody = document.querySelector("#clientTable tbody");
+    tbody.innerHTML = "";
+
+    client.products.forEach((p, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.name}</td>
+        <td>${p.qty}</td>
+        <td>${p.price}</td>
+        <td>${p.total}</td>
+        <td><button class="deleteSelectedBtn" onclick="deleteProduct(${index}, ${i})">🗑️</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("clientTable").style.display = "table";
+    document.getElementById("summary").style.display = "block";
+    document.getElementById("addProductDiv").style.display = "block";
+    document.getElementById("total").textContent = client.total;
+    document.getElementById("totalPaid").textContent = client.paid || 0;
+    document.getElementById("remaining").textContent = client.total - (client.paid || 0);
+    document.getElementById("paid").value = "";
+    document.getElementById("paymentMessage").style.display = "none";
+  }
+
+  function confirmPayment() {
+    const index = clientSelect.value;
+    if(index === "") return alert("❗ اختر عميل أولاً");
+
+    const client = clients[index];
+    const paidInput = document.getElementById("paid");
+    const paymentMessage = document.getElementById("paymentMessage");
+    const newPayment = Number(paidInput.value);
+    if(isNaN(newPayment) || newPayment <= 0) return alert("أدخل مبلغ صحيح");
+
+    if(!client.paid) client.paid = 0;
+    client.paid += newPayment;
+    if(client.paid > client.total) client.paid = client.total;
+
+    const remaining = client.total - client.paid;
+
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2,'0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const today = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()} - ${hours.toString().padStart(2,'0')}:${minutes} ${ampm}`;
+
+    if(!client.history) client.history = [];
+    client.history.push({ date: today, paid: newPayment });
+    localStorage.setItem("clients", JSON.stringify(clients));
+
+    document.getElementById("totalPaid").textContent = client.paid;
+    document.getElementById("remaining").textContent = remaining;
+
+    paymentMessage.style.display = "block";
+    paymentMessage.textContent = remaining === 0 
+      ? `✅ تم دفع ${newPayment} جنيه، العميل سدد المبلغ كاملًا.` 
+      : `💰 تم دفع ${newPayment} جنيه — الباقي ${remaining} جنيه.`;
+
+    paidInput.value = "";
+    showClientDetails();
+  }
+
+  function addProduct() {
+    const index = clientSelect.value;
+    if(index === "") return alert("❗ اختر عميل أولاً");
+
+    const client = clients[index];
+    const name = prompt("أدخل اسم المنتج:");
+    if(!name) return;
+
+    const qty = Number(prompt("أدخل الكمية:"));
+    if(isNaN(qty) || qty <= 0) return alert("الكمية غير صحيحة");
+
+    const price = Number(prompt("أدخل سعر المنتج:"));
+    if(isNaN(price) || price <= 0) return alert("السعر غير صحيح");
+
+    const total = qty * price;
+    client.products.push({ name, qty, price, total });
+    client.total += total;
+
+    localStorage.setItem("clients", JSON.stringify(clients));
+    showClientDetails();
+  }
+
+  function deleteClient() {
+    const index = clientSelect.value;
+    if(index === "") return alert("❗ اختر عميل لحذفه");
+    if(confirm(`هل أنت متأكد من حذف العميل ${clients[index].name}؟`)) {
+      clients.splice(index, 1);
+      localStorage.setItem("clients", JSON.stringify(clients));
+      loadClients();
+      document.getElementById("clientTable").style.display = "none";
+      document.getElementById("summary").style.display = "none";
+      document.getElementById("addProductDiv").style.display = "none";
+      alert("✅ تم حذف العميل بنجاح");
+    }
+  }
+
+  function deleteProduct(clientIndex, productIndex) {
+    if(confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+      clients[clientIndex].total -= clients[clientIndex].products[productIndex].total;
+      clients[clientIndex].products.splice(productIndex, 1);
+      localStorage.setItem("clients", JSON.stringify(clients));
+      showClientDetails();
+    }
+  }
+</script>
+</body>
+</html>

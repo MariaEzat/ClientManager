@@ -19,13 +19,17 @@ self.addEventListener("install", (event) => {
 
 // الاستجابة للطلبات (fetch)
 self.addEventListener("fetch", (event) => {
-  // استثناء الطلبات اللي مش HTML/JS/CSS
   if (event.request.method !== "GET") return;
 
   event.respondWith(
     caches.match(event.request).then(response => {
-      return response || fetch(event.request).catch(() => caches.match("/index.html"));
+      // لو موجود في الكاش ارجعه
+      if (response) return response;
+
+      // حاول تجيب من النت، لو فشل ارجع 404 وليس index.html
+      return fetch(event.request).catch(() => new Response("Page not available offline", { status: 404, statusText: "Offline" }));
     })
   );
 });
+
 

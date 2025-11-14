@@ -324,12 +324,22 @@
 
       // ==== دوال Firebase ====
       function fetchClientsOnline() {
+        // 1️⃣ أولاً جلب البيانات من LocalStorage
+        clients = fetchClientsLocal();
+        loadClients(); // عرض العملاء في الـ dropdown بسرعة
+
+        // 2️⃣ بعدين جلب البيانات من Firebase (إذا موجودة)
         db.ref('clients/').once('value').then(snapshot => {
-          clients = snapshot.exists() ? snapshot.val() : [];
-          loadClients();
+          const onlineData = snapshot.exists() ? snapshot.val() : [];
+          if (onlineData.length > 0) {
+            clients = onlineData;
+            saveClientsLocal(); // تحديث LocalStorage بالبيانات الجديدة
+            loadClients(); // تحديث الـ dropdown بالبيانات الجديدة
+          }
+        }).catch(err => {
+          console.warn("⚠️ خطأ في جلب البيانات من Firebase، سيتم استخدام LocalStorage:", err);
         });
       }
-
       function saveClientsOnline() {
         db.ref('clients/').set(clients).then(() => console.log("✅ البيانات محفوظة على الإنترنت"));
       }
@@ -399,33 +409,19 @@
 
       // ==== إدارة العملاء والمنتجات ====
       // ================== استبدال: loadClients ==================
-      function loadClients() {
-        // clients ممكن يكون array أو object من Firebase — الكود أدناه يتعامل مع array
-        // ترتيب العملاء تصاعديًا حسب الكود (يتأكد أن الكود رقمي)
-        clients = clients.map(c => {
-          // لو الكود مخزّن كسلسلة حوله لرقم لو ممكن
-          if (c && typeof c.code === "string" && c.code.trim() !== "") {
-            const n = Number(c.code);
-            if (!isNaN(n)) c.code = n;
-          }
-          return c;
-        });
+ function loadClients() {
+  clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
 
-        clients.sort((a, b) => {
-          const ca = (a && a.code) ? Number(a.code) : Infinity;
-          const cb = (b && b.code) ? Number(b.code) : Infinity;
-          return ca - cb;
-        });
+  // ترتيب المصفوفة الأصلية حسب الكود
+  clients.sort((a, b) => a.code - b.code);
 
-        clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
-        clients.forEach((c, i) => {
-          const opt = document.createElement("option");
-          opt.value = i;
-          // عرض (الكود) الاسم — إذا مفيش كود نعرض الاسم فقط
-          opt.textContent = (c && c.code) ? `(${c.code}) ${c.name}` : `${c.name}`;
-          clientSelect.appendChild(opt);
-        });
-      }
+  clients.forEach((c, i) => {
+    const opt = document.createElement("option");
+    opt.value = i; // index صحيح
+    opt.textContent = c.code ? `(${c.code}) ${c.name}` : c.name;
+    clientSelect.appendChild(opt);
+  });
+}
 
 
       function showClientDetails() {
@@ -500,49 +496,46 @@
       }
 
       // ================== استبدال: saveClient ==================
-      function saveClient() {
-        const name = document.getElementById("clientNameInput").value.trim();
-        const codeStr = document.getElementById("clientCodeInput").value.trim();
-        if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
-        if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
-        const code = Number(codeStr);
+     function saveClient() {
+  const name = document.getElementById("clientNameInput").value.trim();
+  const codeStr = document.getElementById("clientCodeInput").value.trim();
+  if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
+  if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
+  const code = Number(codeStr);
+  if (!name) return alert("أدخل اسم العميل");
+  if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
 
-        if (!name) return alert("أدخل اسم العميل");
-        if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
+  const existingIndex = clients.findIndex(c => Number(c.code) === code);
+  if (existingIndex !== -1) {
+    const client = clients[existingIndex];
+    client.name = name;
+    client.products = [...newClientProducts];
+    client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
+    if (client.paid === undefined) client.paid = 0;
+    if (!Array.isArray(client.history)) client.history = [];
+    alert("✅ تم تحديث بيانات العميل");
+  } else {
+    const client = {
+      code: code,
+      name: name,
+      products: newClientProducts.map(p => ({ ...p })),
+      total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
+      paid: 0,
+      history: []
+    };
+    clients.push(client);
+    alert("✅ تم حفظ العميل");
+  }
 
-        // هل العميل موجود؟
-        const existingIndex = clients.findIndex(c => Number(c.code) === code);
+  // ترتيب المصفوفة حسب الكود بعد الإضافة
+  clients.sort((a, b) => a.code - b.code);
 
-        if (existingIndex !== -1) {
-          // تحديث بيانات العميل الموجود
-          const client = clients[existingIndex];
-          client.name = name;
-          client.products = [...newClientProducts];
-          client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
+  // حفظ البيانات محليًا وعلى الإنترنت
+  saveClientsOnline();
 
-          // التأكد من وجود الحقول الضرورية
-          if (client.paid === undefined) client.paid = 0;
-          if (!Array.isArray(client.history)) client.history = [];
-
-          saveClientsOnline();
-          alert("✅ تم تحديث بيانات العميل");
-        } else {
-          // إضافة عميل جديد
-          const client = {
-            code: code,
-            name: name,
-            products: newClientProducts.map(p => ({ ...p })),
-            total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
-            paid: 0,
-            history: []
-          };
-          clients.push(client);
-          saveClientsOnline();
-          alert("✅ تم حفظ العميل");
-        }
-
-        showClientSection();
-      }
+  // عرض القسم الرئيسي مع dropdown مرتب
+  showClientSection();
+}
 
       function deleteClient() {
         const index = clientSelect.value;
@@ -635,6 +628,8 @@
       clientSelect.addEventListener("change", showClientDetails);
 
       // البداية
+      clients = fetchClientsLocal();
+      loadClients();
       fetchClientsOnline();
       showClientSection();
 
@@ -685,7 +680,7 @@
           backBtn.style.display = "inline-block";
           title.style.marginTop = oldMargin;
         }).catch(err => {
-          
+
           console.error("خطأ في توليد PDF:", err);
           // رجع الزرار لو حصل خطأ
           downloadBtn.style.display = "inline-block";
@@ -693,6 +688,27 @@
           title.style.marginTop = oldMargin;
         });
       });
+
+
+      function saveClientsLocal() {
+        localStorage.setItem('clients', JSON.stringify(clients));
+      }
+
+      function fetchClientsLocal() {
+        const data = localStorage.getItem('clients');
+        return data ? JSON.parse(data) : [];
+      }
+
+
+      // ==== تعديل saveClientsOnline لحفظ LocalStorage أيضًا ====
+      function saveClientsOnline() {
+        db.ref('clients/').set(clients)
+          .then(() => console.log("✅ البيانات محفوظة على الإنترنت"))
+          .catch(err => console.warn("⚠️ خطأ في حفظ البيانات على Firebase:", err));
+
+        // حفظ نسخة محلية أيضًا
+        saveClientsLocal();
+      }
 
     </script>
 </body>

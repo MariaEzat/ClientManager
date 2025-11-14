@@ -30,6 +30,7 @@ th { background-color:#3a6ea5; color:white; }
 <div class="container">
 <h1>📋 إدارة العملاء والمبيعات</h1>
 
+<!-- قسم اختيار العملاء -->
 <div id="clientSection">
 <label>اختيار عميل:</label>
 <select id="clientSelect">
@@ -60,6 +61,7 @@ th { background-color:#3a6ea5; color:white; }
 </div>
 </div>
 
+<!-- قسم إضافة عميل جديد -->
 <div id="addClientSection" class="hidden">
 <h1>إضافة عميل جديد</h1>
 <label>اسم العميل:</label>
@@ -84,6 +86,7 @@ th { background-color:#3a6ea5; color:white; }
 </div>
 </div>
 
+<!-- قسم التقرير -->
 <div id="reportSection" class="hidden">
 <h1 id="reportClientName">تقرير العميل</h1>
 <table id="reportProductsTable">
@@ -122,14 +125,24 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
 
+// حماية الصفحة
+auth.onAuthStateChanged(user=>{
+  if(!user) window.location.href="login.html";
+});
+
+// تسجيل الخروج
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  auth.signOut().then(()=>window.location.href="login.html");
+});
 let clients = [];
 let newClientProducts = [];
 
+// عناصر DOM
 const clientSection = document.getElementById("clientSection");
 const addClientSection = document.getElementById("addClientSection");
 const reportSection = document.getElementById("reportSection");
-
 const clientSelect = document.getElementById("clientSelect");
 const addClientBtn = document.getElementById("addClientBtn");
 const deleteClientBtn = document.getElementById("deleteClientBtn");
@@ -141,51 +154,48 @@ const backToClientSectionBtn = document.getElementById("backToClientSectionBtn")
 const addProductNewClientBtn = document.getElementById("addProductNewClientBtn");
 const backFromReportBtn = document.getElementById("backFromReportBtn");
 
-// جلب العملاء من Firebase
+// ==== دوال Firebase ====
 function fetchClientsOnline() {
   db.ref('clients/').once('value').then(snapshot => {
-    if(snapshot.exists()) clients = snapshot.val();
-    else clients = [];
+    clients = snapshot.exists() ? snapshot.val() : [];
     loadClients();
   });
 }
 
-// حفظ العملاء على Firebase
 function saveClientsOnline(){
   db.ref('clients/').set(clients).then(()=>console.log("✅ البيانات محفوظة على الإنترنت"));
 }
 
-// عرض الأقسام
+// ==== عرض الأقسام ====
 function showClientSection(){
   clientSection.classList.remove("hidden");
   addClientSection.classList.add("hidden");
   reportSection.classList.add("hidden");
-  loadClients();
   document.getElementById("clientTable").classList.add("hidden");
   document.getElementById("summary").classList.add("hidden");
   addProductBtn.classList.add("hidden");
+  loadClients();
 }
 
 function showAddClient(){
   clientSection.classList.add("hidden");
   addClientSection.classList.remove("hidden");
   reportSection.classList.add("hidden");
-  document.getElementById("newClientName").value="";
-  document.getElementById("productName").value="";
-  document.getElementById("productQty").value="";
-  document.getElementById("productPrice").value="";
-  newClientProducts=[];
+  document.getElementById("newClientName").value = "";
+  document.getElementById("productName").value = "";
+  document.getElementById("productQty").value = "";
+  document.getElementById("productPrice").value = "";
+  newClientProducts = [];
   renderNewClientTable();
 }
 
-// باقي الدوال (loadClients, showClientDetails, addProductToNewClient, renderNewClientTable, saveClient, deleteClient, deleteProduct, addProduct, confirmPayment, showReport)
-// ... نستخدم نفس دوالك السابقة مع استبدال localStorage بالـ Firebase
-// دوال العملاء والمنتجات
+// ==== إدارة العملاء والمنتجات ====
 function loadClients(){
-  clientSelect.innerHTML='<option value="">-- اختار عميل --</option>';
+  clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
   clients.forEach((c,i)=>{
     const opt=document.createElement("option");
-    opt.value=i; opt.textContent=c.name;
+    opt.value=i;
+    opt.textContent=c.name;
     clientSelect.appendChild(opt);
   });
 }
@@ -195,10 +205,10 @@ function showClientDetails(){
   if(index==="") return;
   const client = clients[index];
   const tbody = document.querySelector("#clientTable tbody");
-  tbody.innerHTML="";
+  tbody.innerHTML = "";
   client.products.forEach((p,i)=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>
+    tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>
       <td><button class="btnDelete">🗑️</button></td>`;
     tr.querySelector("button").addEventListener("click", ()=>deleteProduct(index,i));
     tbody.appendChild(tr);
@@ -211,23 +221,20 @@ function showClientDetails(){
   const paid = client.paid||0;
   const remaining = total-paid;
 
-  document.getElementById("total").textContent=total;
-  document.getElementById("totalPaid").textContent=paid;
-  document.getElementById("remaining").textContent=remaining;
-  document.getElementById("paid").value="";
-  document.getElementById("paymentMessage").style.display="none";
-
-  client.total=total;
-  localStorage.setItem("clients", JSON.stringify(clients));
+  document.getElementById("total").textContent = total;
+  document.getElementById("totalPaid").textContent = paid;
+  document.getElementById("remaining").textContent = remaining;
+  document.getElementById("paid").value = "";
+  document.getElementById("paymentMessage").style.display = "none";
 }
 
+// دوال إضافة، حذف، الدفع، التقرير
 function addProductToNewClient(){
-  const name=document.getElementById("productName").value.trim();
-  const qty=Number(document.getElementById("productQty").value);
-  const price=Number(document.getElementById("productPrice").value);
+  const name = document.getElementById("productName").value.trim();
+  const qty = Number(document.getElementById("productQty").value);
+  const price = Number(document.getElementById("productPrice").value);
   if(!name||qty<=0||price<=0) return alert("أدخل بيانات صحيحة");
-  const product={name,qty,price,total:qty*price};
-  newClientProducts.push(product);
+  newClientProducts.push({name,qty,price,total:qty*price});
   renderNewClientTable();
   document.getElementById("productName").value="";
   document.getElementById("productQty").value="";
@@ -235,66 +242,58 @@ function addProductToNewClient(){
 }
 
 function renderNewClientTable(){
-  const tbody=document.querySelector("#productsTable tbody");
-  tbody.innerHTML="";
+  const tbody = document.querySelector("#productsTable tbody");
+  tbody.innerHTML = "";
   let totalPrice=0;
   newClientProducts.forEach(p=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
     tbody.appendChild(tr);
-    totalPrice+=p.total;
+    totalPrice += p.total;
   });
-  document.getElementById("totalPrice").textContent=totalPrice;
+  document.getElementById("totalPrice").textContent = totalPrice;
 }
 
 function saveClient(){
-  const name=document.getElementById("newClientName").value.trim();
+  const name = document.getElementById("newClientName").value.trim();
   if(!name) return alert("أدخل اسم العميل");
   if(newClientProducts.length===0) return alert("أضف منتج واحد على الأقل");
-  const total=newClientProducts.reduce((sum,p)=>sum+p.total,0);
-  const client={name,products:newClientProducts,total,paid:0,history:[]};
+  const client = {name, products:newClientProducts, total:newClientProducts.reduce((sum,p)=>sum+p.total,0), paid:0, history:[]};
   clients.push(client);
-  localStorage.setItem("clients", JSON.stringify(clients));
   saveClientsOnline();
   alert("✅ تم حفظ العميل");
   showClientSection();
 }
 
 function deleteClient(){
-  const index=clientSelect.value;
+  const index = clientSelect.value;
   if(index==="") return alert("اختر العميل");
   if(confirm(`هل تريد حذف ${clients[index].name}?`)){
     clients.splice(index,1);
-    localStorage.setItem("clients", JSON.stringify(clients));
     saveClientsOnline();
-    loadClients();
-    document.getElementById("clientTable").classList.add("hidden");
-    document.getElementById("summary").classList.add("hidden");
-    addProductBtn.classList.add("hidden");
+    showClientSection();
   }
 }
 
 function deleteProduct(clientIndex,productIndex){
   if(confirm("هل تريد حذف هذا المنتج؟")){
     clients[clientIndex].products.splice(productIndex,1);
-    clients[clientIndex].total=clients[clientIndex].products.reduce((sum,p)=>sum+p.total,0);
-    localStorage.setItem("clients", JSON.stringify(clients));
+    clients[clientIndex].total = clients[clientIndex].products.reduce((sum,p)=>sum+p.total,0);
     saveClientsOnline();
     showClientDetails();
   }
 }
 
 function addProduct(){
-  const index=clientSelect.value;
+  const index = clientSelect.value;
   if(index==="") return alert("اختر العميل");
-  newClientProducts=[...clients[index].products.map(p=>({...p}))];
-  document.getElementById("newClientName").value=clients[index].name;
+  newClientProducts = [...clients[index].products.map(p=>({...p}))];
+  document.getElementById("newClientName").value = clients[index].name;
   showAddClient();
-  document.getElementById("saveClientBtn").onclick=()=>{
+  saveClientBtn.onclick = ()=>{
     if(newClientProducts.length===0) return alert("أضف منتج واحد على الأقل");
-    clients[index].products=newClientProducts;
-    clients[index].total=newClientProducts.reduce((sum,p)=>sum+p.total,0);
-    localStorage.setItem("clients", JSON.stringify(clients));
+    clients[index].products = newClientProducts;
+    clients[index].total = newClientProducts.reduce((sum,p)=>sum+p.total,0);
     saveClientsOnline();
     alert("✅ تم تحديث منتجات العميل");
     showClientSection();
@@ -302,72 +301,56 @@ function addProduct(){
 }
 
 function confirmPayment(){
-  const index=clientSelect.value;
+  const index = clientSelect.value;
   if(index==="") return alert("اختر العميل");
-  const client=clients[index];
-  const newPayment=Number(document.getElementById("paid").value);
+  const client = clients[index];
+  const newPayment = Number(document.getElementById("paid").value);
   if(isNaN(newPayment)||newPayment<=0) return alert("أدخل مبلغ صحيح");
-  client.paid=(client.paid||0)+newPayment;
-  const remaining=client.total-client.paid;
-  const now=new Date();
-  client.history=client.history||[];
-  client.history.push({date:now.toLocaleString(),paid:newPayment});
-  localStorage.setItem("clients", JSON.stringify(clients));
+  client.paid = (client.paid||0)+newPayment;
+  client.history.push({date:new Date().toLocaleString(), paid:newPayment});
   saveClientsOnline();
 
-  document.getElementById("totalPaid").textContent=client.paid;
-  document.getElementById("remaining").textContent=remaining;
-  const msg=document.getElementById("paymentMessage");
+  const remaining = client.total - client.paid;
+  document.getElementById("totalPaid").textContent = client.paid;
+  document.getElementById("remaining").textContent = remaining;
+  const msg = document.getElementById("paymentMessage");
   msg.style.display="block";
-  msg.textContent=remaining===0?`✅ تم دفع ${newPayment}`:`💰 تم دفع ${newPayment} — الباقي ${remaining}`;
-  document.getElementById("paid").value="";
+  msg.textContent = remaining===0 ? `✅ تم دفع ${newPayment}` : `💰 تم دفع ${newPayment} — الباقي ${remaining}`;
+  document.getElementById("paid").value = "";
   showClientDetails();
 }
 
 function showReport(){
-  const index=clientSelect.value;
+  const index = clientSelect.value;
   if(index==="") return alert("اختر العميل");
   clientSection.classList.add("hidden");
   addClientSection.classList.add("hidden");
   reportSection.classList.remove("hidden");
-  const client=clients[index];
-  document.getElementById("reportClientName").textContent=`تقرير العميل: ${client.name}`;
+  const client = clients[index];
+  document.getElementById("reportClientName").textContent = `تقرير العميل: ${client.name}`;
 
-  const tbody=document.querySelector("#reportProductsTable tbody");
-  tbody.innerHTML="";
+  const tbody = document.querySelector("#reportProductsTable tbody");
+  tbody.innerHTML = "";
   client.products.forEach(p=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
     tbody.appendChild(tr);
   });
 
-  document.getElementById("reportTotal").textContent=client.total;
-  document.getElementById("reportPaid").textContent=client.paid;
-  document.getElementById("reportRemain").textContent=client.total-client.paid;
+  document.getElementById("reportTotal").textContent = client.total;
+  document.getElementById("reportPaid").textContent = client.paid;
+  document.getElementById("reportRemain").textContent = client.total - client.paid;
 
-  const histBody=document.querySelector("#historyTable tbody");
-  histBody.innerHTML="";
+  const histBody = document.querySelector("#historyTable tbody");
+  histBody.innerHTML = "";
   client.history.forEach(h=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${h.date}</td><td>${h.paid}</td>`;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${h.date}</td><td>${h.paid}</td>`;
     histBody.appendChild(tr);
   });
 }
 
-// مثال: حفظ عميل
-function saveClient(){
-  const name=document.getElementById("newClientName").value.trim();
-  if(!name) return alert("أدخل اسم العميل");
-  if(newClientProducts.length===0) return alert("أضف منتج واحد على الأقل");
-  const total=newClientProducts.reduce((sum,p)=>sum+p.total,0);
-  const client={name,products:newClientProducts,total,paid:0,history:[]};
-  clients.push(client);
-  saveClientsOnline();
-  alert("✅ تم حفظ العميل");
-  showClientSection();
-}
-
-// ربط الأزرار
+// ==== ربط الأزرار ====
 addClientBtn.addEventListener("click", showAddClient);
 deleteClientBtn.addEventListener("click", deleteClient);
 addProductBtn.addEventListener("click", addProduct);

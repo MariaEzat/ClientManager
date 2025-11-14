@@ -202,13 +202,17 @@
     <!-- قسم إضافة عميل جديد -->
     <div id="addClientSection" class="hidden">
       <h1>إضافة عميل جديد</h1>
-      <label>اسم العميل:</label>
-      <input type="text" id="newClientName" placeholder="اكتب اسم العميل">
+      <label id="clientNameLabel">اسم العميل:</label>
+      <input type="text" id="clientNameInput" placeholder="اكتب اسم العميل هنا">
+
+
       <label>رقم العميل:</label>
-<input type="text" id="clientCodeInput" placeholder="ادخل رقم العميل" oninput="this.value = this.value.replace(/[^0-9]/g,'')">
+      <input type="text" id="clientCodeInput" placeholder="اكتب رقم العميل" />
+
+
       <label>اسم المنتج:</label>
       <input type="text" id="productName" placeholder="اسم المنتج">
-            <label>الكمية:</label>
+      <label>الكمية:</label>
       <input type="number" id="productQty" placeholder="عدد القطع">
       <label>سعر الوحدة:</label>
       <input type="number" id="productPrice" placeholder="السعر بالجنيه">
@@ -270,7 +274,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
       // Firebase config
@@ -285,7 +289,7 @@
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.database();
-const auth = firebase.auth(); // سيكون شغال بدون خطأ
+      const auth = firebase.auth(); // سيكون شغال بدون خطأ
 
       // حماية الصفحة
       auth.onAuthStateChanged(user => {
@@ -298,7 +302,7 @@ const auth = firebase.auth(); // سيكون شغال بدون خطأ
       // });
       let clients = [];
       let newClientProducts = [];
-      
+
       // عناصر DOM
       const clientSection = document.getElementById("clientSection");
       const addClientSection = document.getElementById("addClientSection");
@@ -337,52 +341,87 @@ const auth = firebase.auth(); // سيكون شغال بدون خطأ
         loadClients();
       }
 
-     // ================== استبدال: showAddClient ==================
-function showAddClient() {
-  clientSection.classList.add("hidden");
-  addClientSection.classList.remove("hidden");
-  reportSection.classList.add("hidden");
+      function showAddClient() {
+        // إخفاء الأقسام الأخرى
+        clientSection.classList.add("hidden");
+        reportSection.classList.add("hidden");
+        addClientSection.classList.remove("hidden");
 
-  // تنظيف الحقول عند فتح صفحة إضافة عميل
-  document.getElementById("newClientName").value = "";
-  document.getElementById("clientCodeInput").value = "";
-  document.getElementById("productName").value = "";
-  document.getElementById("productQty").value = "";
-  document.getElementById("productPrice").value = "";
-  newClientProducts = [];
-  renderNewClientTable();
-}
+        // مسح جميع الحقول
+        document.getElementById("clientNameInput").value = "";
+        document.getElementById("clientCodeInput").value = "";
+        document.getElementById("clientCodeInput").readOnly = false;
+        document.getElementById("productName").value = "";
+        document.getElementById("productQty").value = "";
+        document.getElementById("productPrice").value = "";
 
+        // مسح جدول منتجات العميل الجديد
+        const productsTbody = document.querySelector("#productsTable tbody");
+        productsTbody.innerHTML = "";
+
+        // إعادة ضبط الإجمالي
+        document.getElementById("totalPrice").textContent = "0";
+
+        // إعادة تهيئة قائمة المنتجات للعميل الجديد
+        newClientProducts = [];
+
+        // إخفاء أي عناصر مرتبطة بالعميل السابق
+        document.getElementById("clientTable").classList.add("hidden");
+        document.getElementById("summary").classList.add("hidden");
+        addProductBtn.classList.add("hidden");
+      }
+
+
+      // ======== دالة إضافة منتجات لعميل موجود ========
+      function addProduct() {
+        const index = clientSelect.value;
+        if (index === "") return alert("❗ اختر عميل أولاً");
+        const client = clients[index];
+
+        // نسخ منتجات العميل الحالية
+        newClientProducts = [...client.products.map(p => ({ ...p }))];
+
+        // تعبئة الحقول readonly
+        document.getElementById("clientNameInput").value = client.name;
+        document.getElementById("clientCodeInput").value = client.code;
+        document.getElementById("clientCodeInput").readOnly = true;
+
+        // عرض قسم إضافة المنتجات
+        clientSection.classList.add("hidden");
+        addClientSection.classList.remove("hidden");
+
+        renderNewClientTable();
+      }
 
       // ==== إدارة العملاء والمنتجات ====
-     // ================== استبدال: loadClients ==================
-function loadClients() {
-  // clients ممكن يكون array أو object من Firebase — الكود أدناه يتعامل مع array
-  // ترتيب العملاء تصاعديًا حسب الكود (يتأكد أن الكود رقمي)
-  clients = clients.map(c => {
-    // لو الكود مخزّن كسلسلة حوله لرقم لو ممكن
-    if (c && typeof c.code === "string" && c.code.trim() !== "") {
-      const n = Number(c.code);
-      if (!isNaN(n)) c.code = n;
-    }
-    return c;
-  });
+      // ================== استبدال: loadClients ==================
+      function loadClients() {
+        // clients ممكن يكون array أو object من Firebase — الكود أدناه يتعامل مع array
+        // ترتيب العملاء تصاعديًا حسب الكود (يتأكد أن الكود رقمي)
+        clients = clients.map(c => {
+          // لو الكود مخزّن كسلسلة حوله لرقم لو ممكن
+          if (c && typeof c.code === "string" && c.code.trim() !== "") {
+            const n = Number(c.code);
+            if (!isNaN(n)) c.code = n;
+          }
+          return c;
+        });
 
-  clients.sort((a, b) => {
-    const ca = (a && a.code) ? Number(a.code) : Infinity;
-    const cb = (b && b.code) ? Number(b.code) : Infinity;
-    return ca - cb;
-  });
+        clients.sort((a, b) => {
+          const ca = (a && a.code) ? Number(a.code) : Infinity;
+          const cb = (b && b.code) ? Number(b.code) : Infinity;
+          return ca - cb;
+        });
 
-  clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
-  clients.forEach((c, i) => {
-    const opt = document.createElement("option");
-    opt.value = i;
-    // عرض (الكود) الاسم — إذا مفيش كود نعرض الاسم فقط
-    opt.textContent = (c && c.code) ? `(${c.code}) ${c.name}` : `${c.name}`;
-    clientSelect.appendChild(opt);
-  });
-}
+        clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
+        clients.forEach((c, i) => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          // عرض (الكود) الاسم — إذا مفيش كود نعرض الاسم فقط
+          opt.textContent = (c && c.code) ? `(${c.code}) ${c.name}` : `${c.name}`;
+          clientSelect.appendChild(opt);
+        });
+      }
 
 
       function showClientDetails() {
@@ -419,8 +458,25 @@ function loadClients() {
         const qty = Number(document.getElementById("productQty").value);
         const price = Number(document.getElementById("productPrice").value);
         if (!name || qty <= 0 || price <= 0) return alert("أدخل بيانات صحيحة");
-        newClientProducts.push({ name, qty, price, total: qty * price });
+
+        const product = { name, qty, price, total: qty * price };
+        newClientProducts.push(product);
+
+        // هل نحن نعدل عميل موجود؟
+        const index = clientSelect.value;
+        const isExistingClient = index !== "";
+
+        if (isExistingClient) {
+          const client = clients[index];
+          client.products.push(product);
+          client.total = client.products.reduce((sum, p) => sum + p.total, 0);
+          saveClientsOnline();
+          showClientDetails();
+        }
+
         renderNewClientTable();
+
+        // مسح الحقول بعد الإضافة
         document.getElementById("productName").value = "";
         document.getElementById("productQty").value = "";
         document.getElementById("productPrice").value = "";
@@ -440,37 +496,37 @@ function loadClients() {
       }
 
       // ================== استبدال: saveClient ==================
-function saveClient() {
-  const name = document.getElementById("newClientName").value.trim();
-  const codeStr = document.getElementById("clientCodeInput").value.trim();
-  if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
-  if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
-  const code = Number(codeStr);
+      function saveClient() {
+        const name = document.getElementById("clientNameInput").value.trim();
+        const codeStr = document.getElementById("clientCodeInput").value.trim();
+        if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
+        if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
+        const code = Number(codeStr);
 
-  if (!name) return alert("أدخل اسم العميل");
-  if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
+        if (!name) return alert("أدخل اسم العميل");
+        if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
 
-  // تحقق من تكرار الكود
-  const exists = clients.some(c => Number(c.code) === code);
-  if (exists) return alert("هذا الكود مستخدم بالفعل، اختاري كود آخر");
+        // تحقق من تكرار الكود
+        const exists = clients.some(c => Number(c.code) === code);
+        if (exists) return alert("هذا الكود مستخدم بالفعل، اختاري كود آخر");
 
-  const client = {
-    code: code,
-    name: name,
-    products: newClientProducts.map(p => ({ ...p })), // نسخة من المنتجات
-    total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
-    paid: 0,
-    history: []
-  };
+        const client = {
+          code: code,
+          name: name,
+          products: newClientProducts.map(p => ({ ...p })), // نسخة من المنتجات
+          total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
+          paid: 0,
+          history: []
+        };
 
-  clients.push(client);
+        clients.push(client);
 
-  // نحفظ على Firebase بنفس الدالة اللي عندك
-  saveClientsOnline();
+        // نحفظ على Firebase بنفس الدالة اللي عندك
+        saveClientsOnline();
 
-  alert("✅ تم حفظ العميل");
-  showClientSection();
-}
+        alert("✅ تم حفظ العميل");
+        showClientSection();
+      }
 
 
       function deleteClient() {
@@ -492,21 +548,6 @@ function saveClient() {
         }
       }
 
-      function addProduct() {
-        const index = clientSelect.value;
-        if (index === "") return alert("اختر العميل");
-        newClientProducts = [...clients[index].products.map(p => ({ ...p }))];
-        document.getElementById("newClientName").value = clients[index].name;
-        showAddClient();
-        saveClientBtn.onclick = () => {
-          if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
-          clients[index].products = newClientProducts;
-          clients[index].total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
-          saveClientsOnline();
-          alert("✅ تم تحديث منتجات العميل");
-          showClientSection();
-        }
-      }
 
       function confirmPayment() {
         const index = clientSelect.value;

@@ -496,38 +496,49 @@
       }
 
       // ================== استبدال: saveClient ==================
-      function saveClient() {
-        const name = document.getElementById("clientNameInput").value.trim();
-        const codeStr = document.getElementById("clientCodeInput").value.trim();
-        if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
-        if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
-        const code = Number(codeStr);
+function saveClient() {
+  const name = document.getElementById("clientNameInput").value.trim();
+  const codeStr = document.getElementById("clientCodeInput").value.trim();
+  if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
+  if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
+  const code = Number(codeStr);
 
-        if (!name) return alert("أدخل اسم العميل");
-        if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
+  if (!name) return alert("أدخل اسم العميل");
+  if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
 
-        // تحقق من تكرار الكود
-        const exists = clients.some(c => Number(c.code) === code);
-        if (exists) return alert("هذا الكود مستخدم بالفعل، اختاري كود آخر");
+  // هل العميل موجود؟
+  const existingIndex = clients.findIndex(c => Number(c.code) === code);
 
-        const client = {
-          code: code,
-          name: name,
-          products: newClientProducts.map(p => ({ ...p })), // نسخة من المنتجات
-          total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
-          paid: 0,
-          history: []
-        };
+  if (existingIndex !== -1) {
+    // تحديث بيانات العميل الموجود
+    const client = clients[existingIndex];
+    client.name = name;
+    client.products = [...newClientProducts];
+    client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
 
-        clients.push(client);
+    // التأكد من وجود الحقول الضرورية
+    if (client.paid === undefined) client.paid = 0;
+    if (!Array.isArray(client.history)) client.history = [];
 
-        // نحفظ على Firebase بنفس الدالة اللي عندك
-        saveClientsOnline();
+    saveClientsOnline();
+    alert("✅ تم تحديث بيانات العميل");
+  } else {
+    // إضافة عميل جديد
+    const client = {
+      code: code,
+      name: name,
+      products: newClientProducts.map(p => ({ ...p })),
+      total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
+      paid: 0,
+      history: []
+    };
+    clients.push(client);
+    saveClientsOnline();
+    alert("✅ تم حفظ العميل");
+  }
 
-        alert("✅ تم حفظ العميل");
-        showClientSection();
-      }
-
+  showClientSection();
+}
 
       function deleteClient() {
         const index = clientSelect.value;
@@ -549,25 +560,33 @@
       }
 
 
-      function confirmPayment() {
-        const index = clientSelect.value;
-        if (index === "") return alert("اختر العميل");
-        const client = clients[index];
-        const newPayment = Number(document.getElementById("paid").value);
-        if (isNaN(newPayment) || newPayment <= 0) return alert("أدخل مبلغ صحيح");
-        client.paid = (client.paid || 0) + newPayment;
-        client.history.push({ date: new Date().toLocaleString(), paid: newPayment });
-        saveClientsOnline();
+   function confirmPayment() {
+  const index = clientSelect.value;
+  if (index === "") return alert("اختر العميل");
+  const client = clients[index];
 
-        const remaining = client.total - client.paid;
-        document.getElementById("totalPaid").textContent = client.paid;
-        document.getElementById("remaining").textContent = remaining;
-        const msg = document.getElementById("paymentMessage");
-        msg.style.display = "block";
-        msg.textContent = remaining === 0 ? `✅ تم دفع ${newPayment}` : `💰 تم دفع ${newPayment} — الباقي ${remaining}`;
-        document.getElementById("paid").value = "";
-        showClientDetails();
-      }
+  // التأكد من وجود الحقول الضرورية
+  if (client.paid === undefined) client.paid = 0;
+  if (!Array.isArray(client.history)) client.history = [];
+
+  const newPayment = Number(document.getElementById("paid").value);
+  if (isNaN(newPayment) || newPayment <= 0) return alert("أدخل مبلغ صحيح");
+
+  client.paid += newPayment;
+  client.history.push({ date: new Date().toLocaleString(), paid: newPayment });
+  saveClientsOnline();
+
+  const remaining = client.total - client.paid;
+  document.getElementById("totalPaid").textContent = client.paid;
+  document.getElementById("remaining").textContent = remaining;
+
+  const msg = document.getElementById("paymentMessage");
+  msg.style.display = "block";
+  msg.textContent = remaining === 0 ? `✅ تم دفع ${newPayment}` : `💰 تم دفع ${newPayment} — الباقي ${remaining}`;
+  document.getElementById("paid").value = "";
+
+  showClientDetails();
+}
 
       function showReport() {
         const index = clientSelect.value;

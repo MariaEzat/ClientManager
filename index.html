@@ -240,6 +240,8 @@
     <!-- قسم التقرير -->
     <div id="reportSection" class="hidden">
       <h1 id="reportClientName">تقرير العميل</h1>
+      <button id="downloadPdfBtn">⬇️ تحميل PDF</button>
+
       <table id="reportProductsTable">
         <thead>
           <tr>
@@ -275,6 +277,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
       // Firebase config
@@ -496,49 +500,49 @@
       }
 
       // ================== استبدال: saveClient ==================
-function saveClient() {
-  const name = document.getElementById("clientNameInput").value.trim();
-  const codeStr = document.getElementById("clientCodeInput").value.trim();
-  if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
-  if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
-  const code = Number(codeStr);
+      function saveClient() {
+        const name = document.getElementById("clientNameInput").value.trim();
+        const codeStr = document.getElementById("clientCodeInput").value.trim();
+        if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
+        if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
+        const code = Number(codeStr);
 
-  if (!name) return alert("أدخل اسم العميل");
-  if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
+        if (!name) return alert("أدخل اسم العميل");
+        if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
 
-  // هل العميل موجود؟
-  const existingIndex = clients.findIndex(c => Number(c.code) === code);
+        // هل العميل موجود؟
+        const existingIndex = clients.findIndex(c => Number(c.code) === code);
 
-  if (existingIndex !== -1) {
-    // تحديث بيانات العميل الموجود
-    const client = clients[existingIndex];
-    client.name = name;
-    client.products = [...newClientProducts];
-    client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
+        if (existingIndex !== -1) {
+          // تحديث بيانات العميل الموجود
+          const client = clients[existingIndex];
+          client.name = name;
+          client.products = [...newClientProducts];
+          client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
 
-    // التأكد من وجود الحقول الضرورية
-    if (client.paid === undefined) client.paid = 0;
-    if (!Array.isArray(client.history)) client.history = [];
+          // التأكد من وجود الحقول الضرورية
+          if (client.paid === undefined) client.paid = 0;
+          if (!Array.isArray(client.history)) client.history = [];
 
-    saveClientsOnline();
-    alert("✅ تم تحديث بيانات العميل");
-  } else {
-    // إضافة عميل جديد
-    const client = {
-      code: code,
-      name: name,
-      products: newClientProducts.map(p => ({ ...p })),
-      total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
-      paid: 0,
-      history: []
-    };
-    clients.push(client);
-    saveClientsOnline();
-    alert("✅ تم حفظ العميل");
-  }
+          saveClientsOnline();
+          alert("✅ تم تحديث بيانات العميل");
+        } else {
+          // إضافة عميل جديد
+          const client = {
+            code: code,
+            name: name,
+            products: newClientProducts.map(p => ({ ...p })),
+            total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
+            paid: 0,
+            history: []
+          };
+          clients.push(client);
+          saveClientsOnline();
+          alert("✅ تم حفظ العميل");
+        }
 
-  showClientSection();
-}
+        showClientSection();
+      }
 
       function deleteClient() {
         const index = clientSelect.value;
@@ -560,33 +564,33 @@ function saveClient() {
       }
 
 
-   function confirmPayment() {
-  const index = clientSelect.value;
-  if (index === "") return alert("اختر العميل");
-  const client = clients[index];
+      function confirmPayment() {
+        const index = clientSelect.value;
+        if (index === "") return alert("اختر العميل");
+        const client = clients[index];
 
-  // التأكد من وجود الحقول الضرورية
-  if (client.paid === undefined) client.paid = 0;
-  if (!Array.isArray(client.history)) client.history = [];
+        // التأكد من وجود الحقول الضرورية
+        if (client.paid === undefined) client.paid = 0;
+        if (!Array.isArray(client.history)) client.history = [];
 
-  const newPayment = Number(document.getElementById("paid").value);
-  if (isNaN(newPayment) || newPayment <= 0) return alert("أدخل مبلغ صحيح");
+        const newPayment = Number(document.getElementById("paid").value);
+        if (isNaN(newPayment) || newPayment <= 0) return alert("أدخل مبلغ صحيح");
 
-  client.paid += newPayment;
-  client.history.push({ date: new Date().toLocaleString(), paid: newPayment });
-  saveClientsOnline();
+        client.paid += newPayment;
+        client.history.push({ date: new Date().toLocaleString(), paid: newPayment });
+        saveClientsOnline();
 
-  const remaining = client.total - client.paid;
-  document.getElementById("totalPaid").textContent = client.paid;
-  document.getElementById("remaining").textContent = remaining;
+        const remaining = client.total - client.paid;
+        document.getElementById("totalPaid").textContent = client.paid;
+        document.getElementById("remaining").textContent = remaining;
 
-  const msg = document.getElementById("paymentMessage");
-  msg.style.display = "block";
-  msg.textContent = remaining === 0 ? `✅ تم دفع ${newPayment}` : `💰 تم دفع ${newPayment} — الباقي ${remaining}`;
-  document.getElementById("paid").value = "";
+        const msg = document.getElementById("paymentMessage");
+        msg.style.display = "block";
+        msg.textContent = remaining === 0 ? `✅ تم دفع ${newPayment}` : `💰 تم دفع ${newPayment} — الباقي ${remaining}`;
+        document.getElementById("paid").value = "";
 
-  showClientDetails();
-}
+        showClientDetails();
+      }
 
       function showReport() {
         const index = clientSelect.value;
@@ -633,6 +637,62 @@ function saveClient() {
       // البداية
       fetchClientsOnline();
       showClientSection();
+
+
+      document.getElementById("downloadPdfBtn").addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById("reportSection");
+
+        // أخفي الأزرار مؤقتًا
+        const downloadBtn = document.getElementById("downloadPdfBtn");
+        const backBtn = document.getElementById("backFromReportBtn");
+        downloadBtn.style.display = "none";
+        backBtn.style.display = "none";
+
+        const title = document.getElementById("reportClientName");
+        const oldMargin = title.style.marginTop;
+        title.style.marginTop = "0px";
+
+        const clientName = title.textContent.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "_");
+
+        html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+
+          const imgProps = pdf.getImageProperties(imgData);
+          const imgWidth = pageWidth - 20; // 10mm margin
+          const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+          let heightLeft = imgHeight;
+          let position = 10;
+
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight - 20;
+
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight - 20;
+          }
+
+          pdf.save(`${clientName}.pdf`);
+
+          // رجع الزرار بعد التحميل
+          downloadBtn.style.display = "inline-block";
+          backBtn.style.display = "inline-block";
+          title.style.marginTop = oldMargin;
+        }).catch(err => {
+          
+          console.error("خطأ في توليد PDF:", err);
+          // رجع الزرار لو حصل خطأ
+          downloadBtn.style.display = "inline-block";
+          backBtn.style.display = "inline-block";
+          title.style.marginTop = oldMargin;
+        });
+      });
 
     </script>
 </body>

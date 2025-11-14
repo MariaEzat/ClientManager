@@ -3,28 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة  والمبيعات</title>
+<title>إدارة العملاء والمبيعات</title>
 <style>
-  body { font-family: 'Cairo', sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; }
-  .container { max-width: 900px; margin: 30px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-  h1 { text-align: center; color: #3a6ea5; font-size: 28px; margin-bottom: 30px; }
-  label { font-weight: bold; margin-bottom: 8px; display: block; }
-  input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 10px; }
-  button { background-color: #3a6ea5; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.3s; margin: 5px 0; }
-  button:hover { background-color: #2f5c88; }
-  .btn-Delete{ background-color:#d9534f; }
-  .btnDelete{ border: none; background: none; cursor:pointer; }
-  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-  th, td { text-align: center; padding: 10px; border-bottom: 1px solid #eee; font-size: 15px; }
-  th { background-color: #3a6ea5; color: white; }
-  .summary, .total, .message { text-align: center; margin-top: 15px; font-size: 16px; }
-  .message { background-color: #eef5ff; border-radius: 10px; padding: 10px; color: #2f5c88; font-weight: bold; display: none; }
-  .payment-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; align-items: center; }
-  .payment-row input { width: 150px; }
-  .hidden { display: none; }
-  @media (max-width: 600px) { .payment-row { flex-direction: column; } input { width: 93%; } }
-  .actions { display: flex; justify-content: space-between; margin-top: 20px; }
-  @media (max-width: 600px) { .actions { flex-direction: column; gap: 10px; } .actions button:first-child { align-self: flex-end; } .actions button:last-child { align-self: flex-start; } }
+body { font-family: 'Cairo', sans-serif; background-color: #f5f7fa; margin:0; padding:0; }
+.container { max-width:900px; margin:30px auto; background:white; padding:30px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+h1 { text-align:center; color:#3a6ea5; font-size:28px; margin-bottom:30px; }
+label { font-weight:bold; margin-bottom:8px; display:block; }
+input, select { width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:16px; margin-bottom:10px; }
+button { background-color:#3a6ea5; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:16px; transition:.3s; margin:5px 0; }
+button:hover { background-color:#2f5c88; }
+.btn-Delete { background-color:#d9534f; }
+.btnDelete { border:none; background:none; cursor:pointer; }
+table { width:100%; border-collapse:collapse; margin-top:15px; }
+th, td { text-align:center; padding:10px; border-bottom:1px solid #eee; font-size:15px; }
+th { background-color:#3a6ea5; color:white; }
+.summary, .total, .message { text-align:center; margin-top:15px; font-size:16px; }
+.message { background-color:#eef5ff; border-radius:10px; padding:10px; color:#2f5c88; font-weight:bold; display:none; }
+.payment-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; align-items:center; }
+.payment-row input { width:150px; }
+.hidden { display:none; }
+.actions { display:flex; justify-content:space-between; margin-top:20px; }
+@media (max-width:600px) { .payment-row { flex-direction:column; } input { width:93%; } .actions { flex-direction:column; gap:10px; } .actions button:first-child { align-self:flex-end; } .actions button:last-child { align-self:flex-start; } }
 </style>
 </head>
 <body>
@@ -32,97 +31,97 @@
 <h1>📋 إدارة العملاء والمبيعات</h1>
 
 <div id="clientSection">
-  <label>اختيار عميل:</label>
-  <select id="clientSelect">
-    <option value="">-- اختار عميل --</option>
-  </select>
-  <button id="addClientBtn">➕ إضافة عميل</button>
-  <button id="deleteClientBtn" class="btn-Delete">🗑️ حذف العميل</button>
+<label>اختيار عميل:</label>
+<select id="clientSelect">
+  <option value="">-- اختار عميل --</option>
+</select>
+<button id="addClientBtn">➕ إضافة عميل</button>
+<button id="deleteClientBtn" class="btn-Delete">🗑️ حذف العميل</button>
 
-  <table id="clientTable" class="hidden">
-    <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>حذف</th></tr></thead>
-    <tbody></tbody>
-  </table>
+<table id="clientTable" class="hidden">
+  <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>حذف</th></tr></thead>
+  <tbody></tbody>
+</table>
 
-  <button id="addProductBtn" class="hidden">➕ إضافة منتجات جديدة للعميل</button>
+<button id="addProductBtn" class="hidden">➕ إضافة منتجات جديدة للعميل</button>
 
-  <div class="summary hidden" id="summary">
-    <p>الإجمالي الكلي: <span id="total">0</span> جنيه</p>
-    <p>إجمالي المدفوع: <span id="totalPaid">0</span> جنيه</p>
-    <p>المتبقي: <span id="remaining">0</span> جنيه</p>
+<div class="summary hidden" id="summary">
+<p>الإجمالي الكلي: <span id="total">0</span> جنيه</p>
+<p>إجمالي المدفوع: <span id="totalPaid">0</span> جنيه</p>
+<p>المتبقي: <span id="remaining">0</span> جنيه</p>
 
-    <div class="payment-row">
-      <input type="number" id="paid" placeholder="اكتب المبلغ المدفوع">
-      <button id="confirmPaymentBtn">تم الدفع ✅</button>
-    </div>
+<div class="payment-row">
+<input type="number" id="paid" placeholder="اكتب المبلغ المدفوع">
+<button id="confirmPaymentBtn">تم الدفع ✅</button>
+</div>
 
-    <div class="message" id="paymentMessage"></div>
-    <button id="showReportBtn">📊 عرض التقرير</button>
-  </div>
+<div class="message" id="paymentMessage"></div>
+<button id="showReportBtn">📊 عرض التقرير</button>
+</div>
 </div>
 
 <div id="addClientSection" class="hidden">
-  <h1>إضافة عميل جديد</h1>
-  <label>اسم العميل:</label>
-  <input type="text" id="newClientName" placeholder="اكتب اسم العميل">
-  <label>اسم المنتج:</label>
-  <input type="text" id="productName" placeholder="اسم المنتج">
-  <label>الكمية:</label>
-  <input type="number" id="productQty" placeholder="عدد القطع">
-  <label>سعر الوحدة:</label>
-  <input type="number" id="productPrice" placeholder="السعر بالجنيه">
-  <button id="addProductNewClientBtn">➕ إضافة منتج</button>
+<h1>إضافة عميل جديد</h1>
+<label>اسم العميل:</label>
+<input type="text" id="newClientName" placeholder="اكتب اسم العميل">
+<label>اسم المنتج:</label>
+<input type="text" id="productName" placeholder="اسم المنتج">
+<label>الكمية:</label>
+<input type="number" id="productQty" placeholder="عدد القطع">
+<label>سعر الوحدة:</label>
+<input type="number" id="productPrice" placeholder="السعر بالجنيه">
+<button id="addProductNewClientBtn">➕ إضافة منتج</button>
 
-  <table id="productsTable">
-    <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-    <tbody></tbody>
-  </table>
+<table id="productsTable">
+<thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+<tbody></tbody>
+</table>
 
-  <div class="total">الإجمالي الكلي: <span id="totalPrice">0</span> جنيه</div>
-  <div class="actions">
-    <button id="saveClientBtn">💾 حفظ العميل</button>
-    <button id="backToClientSectionBtn">⬅️ رجوع</button>
-  </div>
+<div class="total">الإجمالي الكلي: <span id="totalPrice">0</span> جنيه</div>
+<div class="actions">
+<button id="saveClientBtn">💾 حفظ العميل</button>
+<button id="backToClientSectionBtn">⬅️ رجوع</button>
+</div>
 </div>
 
 <div id="reportSection" class="hidden">
-  <h1 id="reportClientName">تقرير العميل</h1>
-  <table id="reportProductsTable">
-    <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-    <tbody></tbody>
-  </table>
+<h1 id="reportClientName">تقرير العميل</h1>
+<table id="reportProductsTable">
+<thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+<tbody></tbody>
+</table>
 
-  <div class="total">
-    الإجمالي الكلي: <span id="reportTotal">0</span> جنيه<br>
-    إجمالي المدفوع: <span id="reportPaid">0</span> جنيه<br>
-    المتبقي: <span id="reportRemain">0</span> جنيه
-  </div>
-
-  <h3 style="margin-top:20px;">💳 سجل الدفعات:</h3>
-  <table id="historyTable">
-    <thead><tr><th>التاريخ</th><th>المبلغ المدفوع</th></tr></thead>
-    <tbody></tbody>
-  </table>
-  <button id="backFromReportBtn">⬅️ رجوع</button>
-</div>
+<div class="total">
+الإجمالي الكلي: <span id="reportTotal">0</span> جنيه<br>
+إجمالي المدفوع: <span id="reportPaid">0</span> جنيه<br>
+المتبقي: <span id="reportRemain">0</span> جنيه
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+<h3 style="margin-top:20px;">💳 سجل الدفعات:</h3>
+<table id="historyTable">
+<thead><tr><th>التاريخ</th><th>المبلغ المدفوع</th></tr></thead>
+<tbody></tbody>
+</table>
+<button id="backFromReportBtn">⬅️ رجوع</button>
+</div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyD3Fg6CKVhe4cdDa-zJHOAaTTRQVp6YRv4",
   authDomain: "client-manager-51c15.firebaseapp.com",
+  databaseURL: "https://client-manager-51c15-default-rtdb.firebaseio.com",
   projectId: "client-manager-51c15",
   storageBucket: "client-manager-51c15.appspot.com",
   messagingSenderId: "48173898256",
-  appId: "1:48173898256:web:b8bb7e9efb772fc79e4895",
-  measurementId: "G-LHLHR5V07V"
+  appId: "1:48173898256:web:b8bb7e9efb772fc79e4895"
 };
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 let clients = [];
 let newClientProducts = [];
@@ -142,19 +141,18 @@ const backToClientSectionBtn = document.getElementById("backToClientSectionBtn")
 const addProductNewClientBtn = document.getElementById("addProductNewClientBtn");
 const backFromReportBtn = document.getElementById("backFromReportBtn");
 
-// جلب العملاء
-async function fetchClientsOnline() {
-  const snapshot = await get(ref(db, "clients/"));
-  if(snapshot.exists()) clients = snapshot.val();
-  else clients = JSON.parse(localStorage.getItem("clients") || "[]");
-  loadClients();
+// جلب العملاء من Firebase
+function fetchClientsOnline() {
+  db.ref('clients/').once('value').then(snapshot => {
+    if(snapshot.exists()) clients = snapshot.val();
+    else clients = [];
+    loadClients();
+  });
 }
 
 // حفظ العملاء على Firebase
 function saveClientsOnline(){
-  set(ref(db, "clients/"), clients)
-    .then(()=>console.log("✅ البيانات محفوظة على الإنترنت"))
-    .catch(err=>console.error(err));
+  db.ref('clients/').set(clients).then(()=>console.log("✅ البيانات محفوظة على الإنترنت"));
 }
 
 // عرض الأقسام
@@ -180,6 +178,8 @@ function showAddClient(){
   renderNewClientTable();
 }
 
+// باقي الدوال (loadClients, showClientDetails, addProductToNewClient, renderNewClientTable, saveClient, deleteClient, deleteProduct, addProduct, confirmPayment, showReport)
+// ... نستخدم نفس دوالك السابقة مع استبدال localStorage بالـ Firebase
 // دوال العملاء والمنتجات
 function loadClients(){
   clientSelect.innerHTML='<option value="">-- اختار عميل --</option>';
@@ -354,6 +354,19 @@ function showReport(){
   });
 }
 
+// مثال: حفظ عميل
+function saveClient(){
+  const name=document.getElementById("newClientName").value.trim();
+  if(!name) return alert("أدخل اسم العميل");
+  if(newClientProducts.length===0) return alert("أضف منتج واحد على الأقل");
+  const total=newClientProducts.reduce((sum,p)=>sum+p.total,0);
+  const client={name,products:newClientProducts,total,paid:0,history:[]};
+  clients.push(client);
+  saveClientsOnline();
+  alert("✅ تم حفظ العميل");
+  showClientSection();
+}
+
 // ربط الأزرار
 addClientBtn.addEventListener("click", showAddClient);
 deleteClientBtn.addEventListener("click", deleteClient);
@@ -366,9 +379,9 @@ addProductNewClientBtn.addEventListener("click", addProductToNewClient);
 backFromReportBtn.addEventListener("click", showClientSection);
 clientSelect.addEventListener("change", showClientDetails);
 
+// البداية
 fetchClientsOnline();
 showClientSection();
-
 </script>
 </body>
 </html>

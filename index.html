@@ -3,368 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>إدارة العملاء والمبيعات</title>
+<title>تسجيل الدخول</title>
 <style>
-body { font-family: 'Cairo', sans-serif; background-color: #f5f7fa; margin:0; padding:0; }
-.container { max-width:900px; margin:30px auto; background:white; padding:30px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.1); }
-h1 { text-align:center; color:#3a6ea5; font-size:28px; margin-bottom:30px; }
-label { font-weight:bold; margin-bottom:8px; display:block; }
-input, select { width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-size:16px; margin-bottom:10px; }
-button { background-color:#3a6ea5; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:16px; transition:.3s; margin:5px 0; }
-button:hover { background-color:#2f5c88; }
-.btn-Delete { background-color:#d9534f; }
-.btnDelete { border:none; background:none; cursor:pointer; }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th, td { text-align:center; padding:10px; border-bottom:1px solid #eee; font-size:15px; }
-th { background-color:#3a6ea5; color:white; }
-.summary, .total, .message { text-align:center; margin-top:15px; font-size:16px; }
-.message { background-color:#eef5ff; border-radius:10px; padding:10px; color:#2f5c88; font-weight:bold; display:none; }
-.payment-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; align-items:center; }
-.payment-row input { width:150px; }
-.hidden { display:none; }
-.actions { display:flex; justify-content:space-between; margin-top:20px; }
-@media (max-width:600px) { .payment-row { flex-direction:column; } input { width:93%; } .actions { flex-direction:column; gap:10px; } .actions button:first-child { align-self:flex-end; } .actions button:last-child { align-self:flex-start; } }
+body { font-family: 'Cairo', sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; background:#f5f7fa; margin:0; }
+.container { background:white; padding:30px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.1); width:300px; text-align:center; }
+h1 { color:#3a6ea5; margin-bottom:20px; }
+input { width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ccc; }
+button { width:100%; padding:10px; border:none; border-radius:8px; background:#3a6ea5; color:white; cursor:pointer; font-size:16px; }
+button:hover { background:#2f5c88; }
+.message { margin-top:10px; color:red; display:none; }
 </style>
 </head>
 <body>
 <div class="container">
-<h1>📋 إدارة العملاء والمبيعات</h1>
-
-<!-- قسم اختيار العملاء -->
-<div id="clientSection">
-<label>اختيار عميل:</label>
-<select id="clientSelect">
-  <option value="">-- اختار عميل --</option>
-</select>
-<button id="addClientBtn">➕ إضافة عميل</button>
-<button id="deleteClientBtn" class="btn-Delete">🗑️ حذف العميل</button>
-
-<table id="clientTable" class="hidden">
-  <thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th><th>حذف</th></tr></thead>
-  <tbody></tbody>
-</table>
-
-<button id="addProductBtn" class="hidden">➕ إضافة منتجات جديدة للعميل</button>
-
-<div class="summary hidden" id="summary">
-<p>الإجمالي الكلي: <span id="total">0</span> جنيه</p>
-<p>إجمالي المدفوع: <span id="totalPaid">0</span> جنيه</p>
-<p>المتبقي: <span id="remaining">0</span> جنيه</p>
-
-<div class="payment-row">
-<input type="number" id="paid" placeholder="اكتب المبلغ المدفوع">
-<button id="confirmPaymentBtn">تم الدفع ✅</button>
+<h1>تسجيل الدخول</h1>
+<input type="email" id="email" placeholder="البريد الإلكتروني">
+<input type="password" id="password" placeholder="كلمة المرور">
+<button id="loginBtn">تسجيل الدخول</button>
+<div class="message" id="message"></div>
 </div>
 
-<div class="message" id="paymentMessage"></div>
-<button id="showReportBtn">📊 عرض التقرير</button>
-</div>
-</div>
-
-<!-- قسم إضافة عميل جديد -->
-<div id="addClientSection" class="hidden">
-<h1>إضافة عميل جديد</h1>
-<label>اسم العميل:</label>
-<input type="text" id="newClientName" placeholder="اكتب اسم العميل">
-<label>اسم المنتج:</label>
-<input type="text" id="productName" placeholder="اسم المنتج">
-<label>الكمية:</label>
-<input type="number" id="productQty" placeholder="عدد القطع">
-<label>سعر الوحدة:</label>
-<input type="number" id="productPrice" placeholder="السعر بالجنيه">
-<button id="addProductNewClientBtn">➕ إضافة منتج</button>
-
-<table id="productsTable">
-<thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-<tbody></tbody>
-</table>
-
-<div class="total">الإجمالي الكلي: <span id="totalPrice">0</span> جنيه</div>
-<div class="actions">
-<button id="saveClientBtn">💾 حفظ العميل</button>
-<button id="backToClientSectionBtn">⬅️ رجوع</button>
-</div>
-</div>
-
-<!-- قسم التقرير -->
-<div id="reportSection" class="hidden">
-<h1 id="reportClientName">تقرير العميل</h1>
-<table id="reportProductsTable">
-<thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
-<tbody></tbody>
-</table>
-
-<div class="total">
-الإجمالي الكلي: <span id="reportTotal">0</span> جنيه<br>
-إجمالي المدفوع: <span id="reportPaid">0</span> جنيه<br>
-المتبقي: <span id="reportRemain">0</span> جنيه
-</div>
-
-<h3 style="margin-top:20px;">💳 سجل الدفعات:</h3>
-<table id="historyTable">
-<thead><tr><th>التاريخ</th><th>المبلغ المدفوع</th></tr></thead>
-<tbody></tbody>
-</table>
-<button id="backFromReportBtn">⬅️ رجوع</button>
-</div>
-
-<!-- Firebase SDK -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
 // Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyD3Fg6CKVhe4cdDa-zJHOAaTTRQVp6YRv4",
   authDomain: "client-manager-51c15.firebaseapp.com",
-  databaseURL: "https://client-manager-51c15-default-rtdb.firebaseio.com",
   projectId: "client-manager-51c15",
   storageBucket: "client-manager-51c15.appspot.com",
   messagingSenderId: "48173898256",
-  appId: "1:48173898256:web:b8bb7e9efb772fc79e4895"
+  appId: "1:48173898256:web:b8bb7e9efb772fc79e4895",
+  databaseURL: "https://client-manager-51c15-default-rtdb.firebaseio.com"
 };
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 const auth = firebase.auth();
 
-// حماية الصفحة
+const loginBtn = document.getElementById("loginBtn");
+const messageDiv = document.getElementById("message");
+
+loginBtn.addEventListener("click", ()=>{
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  messageDiv.style.display = "none";
+
+  if(!email || !password){ 
+    messageDiv.textContent = "أدخل البريد وكلمة المرور";
+    messageDiv.style.display = "block";
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email,password)
+    .then(()=> {
+      window.location.href = "index.html";
+    })
+    .catch(err=>{
+      messageDiv.textContent = err.message;
+      messageDiv.style.display = "block";
+    });
+});
+
+// منع الوصول للصفحة لو المستخدم متسجلش الدخول
 auth.onAuthStateChanged(user=>{
-  if(!user) window.location.href="login.html";
+  if(user) window.location.href = "index.html";
 });
-
-// تسجيل الخروج
-document.getElementById("logoutBtn").addEventListener("click", ()=>{
-  auth.signOut().then(()=>window.location.href="login.html");
-});
-let clients = [];
-let newClientProducts = [];
-
-// عناصر DOM
-const clientSection = document.getElementById("clientSection");
-const addClientSection = document.getElementById("addClientSection");
-const reportSection = document.getElementById("reportSection");
-const clientSelect = document.getElementById("clientSelect");
-const addClientBtn = document.getElementById("addClientBtn");
-const deleteClientBtn = document.getElementById("deleteClientBtn");
-const addProductBtn = document.getElementById("addProductBtn");
-const confirmPaymentBtn = document.getElementById("confirmPaymentBtn");
-const showReportBtn = document.getElementById("showReportBtn");
-const saveClientBtn = document.getElementById("saveClientBtn");
-const backToClientSectionBtn = document.getElementById("backToClientSectionBtn");
-const addProductNewClientBtn = document.getElementById("addProductNewClientBtn");
-const backFromReportBtn = document.getElementById("backFromReportBtn");
-
-// ==== دوال Firebase ====
-function fetchClientsOnline() {
-  db.ref('clients/').once('value').then(snapshot => {
-    clients = snapshot.exists() ? snapshot.val() : [];
-    loadClients();
-  });
-}
-
-function saveClientsOnline(){
-  db.ref('clients/').set(clients).then(()=>console.log("✅ البيانات محفوظة على الإنترنت"));
-}
-
-// ==== عرض الأقسام ====
-function showClientSection(){
-  clientSection.classList.remove("hidden");
-  addClientSection.classList.add("hidden");
-  reportSection.classList.add("hidden");
-  document.getElementById("clientTable").classList.add("hidden");
-  document.getElementById("summary").classList.add("hidden");
-  addProductBtn.classList.add("hidden");
-  loadClients();
-}
-
-function showAddClient(){
-  clientSection.classList.add("hidden");
-  addClientSection.classList.remove("hidden");
-  reportSection.classList.add("hidden");
-  document.getElementById("newClientName").value = "";
-  document.getElementById("productName").value = "";
-  document.getElementById("productQty").value = "";
-  document.getElementById("productPrice").value = "";
-  newClientProducts = [];
-  renderNewClientTable();
-}
-
-// ==== إدارة العملاء والمنتجات ====
-function loadClients(){
-  clientSelect.innerHTML = '<option value="">-- اختار عميل --</option>';
-  clients.forEach((c,i)=>{
-    const opt=document.createElement("option");
-    opt.value=i;
-    opt.textContent=c.name;
-    clientSelect.appendChild(opt);
-  });
-}
-
-function showClientDetails(){
-  const index = clientSelect.value;
-  if(index==="") return;
-  const client = clients[index];
-  const tbody = document.querySelector("#clientTable tbody");
-  tbody.innerHTML = "";
-  client.products.forEach((p,i)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>
-      <td><button class="btnDelete">🗑️</button></td>`;
-    tr.querySelector("button").addEventListener("click", ()=>deleteProduct(index,i));
-    tbody.appendChild(tr);
-  });
-  document.getElementById("clientTable").classList.remove("hidden");
-  document.getElementById("summary").classList.remove("hidden");
-  addProductBtn.classList.remove("hidden");
-
-  const total = client.products.reduce((sum,p)=>sum+p.total,0);
-  const paid = client.paid||0;
-  const remaining = total-paid;
-
-  document.getElementById("total").textContent = total;
-  document.getElementById("totalPaid").textContent = paid;
-  document.getElementById("remaining").textContent = remaining;
-  document.getElementById("paid").value = "";
-  document.getElementById("paymentMessage").style.display = "none";
-}
-
-// دوال إضافة، حذف، الدفع، التقرير
-function addProductToNewClient(){
-  const name = document.getElementById("productName").value.trim();
-  const qty = Number(document.getElementById("productQty").value);
-  const price = Number(document.getElementById("productPrice").value);
-  if(!name||qty<=0||price<=0) return alert("أدخل بيانات صحيحة");
-  newClientProducts.push({name,qty,price,total:qty*price});
-  renderNewClientTable();
-  document.getElementById("productName").value="";
-  document.getElementById("productQty").value="";
-  document.getElementById("productPrice").value="";
-}
-
-function renderNewClientTable(){
-  const tbody = document.querySelector("#productsTable tbody");
-  tbody.innerHTML = "";
-  let totalPrice=0;
-  newClientProducts.forEach(p=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
-    tbody.appendChild(tr);
-    totalPrice += p.total;
-  });
-  document.getElementById("totalPrice").textContent = totalPrice;
-}
-
-function saveClient(){
-  const name = document.getElementById("newClientName").value.trim();
-  if(!name) return alert("أدخل اسم العميل");
-  if(newClientProducts.length===0) return alert("أضف منتج واحد على الأقل");
-  const client = {name, products:newClientProducts, total:newClientProducts.reduce((sum,p)=>sum+p.total,0), paid:0, history:[]};
-  clients.push(client);
-  saveClientsOnline();
-  alert("✅ تم حفظ العميل");
-  showClientSection();
-}
-
-function deleteClient(){
-  const index = clientSelect.value;
-  if(index==="") return alert("اختر العميل");
-  if(confirm(`هل تريد حذف ${clients[index].name}?`)){
-    clients.splice(index,1);
-    saveClientsOnline();
-    showClientSection();
-  }
-}
-
-function deleteProduct(clientIndex,productIndex){
-  if(confirm("هل تريد حذف هذا المنتج؟")){
-    clients[clientIndex].products.splice(productIndex,1);
-    clients[clientIndex].total = clients[clientIndex].products.reduce((sum,p)=>sum+p.total,0);
-    saveClientsOnline();
-    showClientDetails();
-  }
-}
-
-function addProduct(){
-  const index = clientSelect.value;
-  if(index==="") return alert("اختر العميل");
-  newClientProducts = [...clients[index].products.map(p=>({...p}))];
-  document.getElementById("newClientName").value = clients[index].name;
-  showAddClient();
-  saveClientBtn.onclick = ()=>{
-    if(newClientProducts.length===0) return alert("أضف منتج واحد على الأقل");
-    clients[index].products = newClientProducts;
-    clients[index].total = newClientProducts.reduce((sum,p)=>sum+p.total,0);
-    saveClientsOnline();
-    alert("✅ تم تحديث منتجات العميل");
-    showClientSection();
-  }
-}
-
-function confirmPayment(){
-  const index = clientSelect.value;
-  if(index==="") return alert("اختر العميل");
-  const client = clients[index];
-  const newPayment = Number(document.getElementById("paid").value);
-  if(isNaN(newPayment)||newPayment<=0) return alert("أدخل مبلغ صحيح");
-  client.paid = (client.paid||0)+newPayment;
-  client.history.push({date:new Date().toLocaleString(), paid:newPayment});
-  saveClientsOnline();
-
-  const remaining = client.total - client.paid;
-  document.getElementById("totalPaid").textContent = client.paid;
-  document.getElementById("remaining").textContent = remaining;
-  const msg = document.getElementById("paymentMessage");
-  msg.style.display="block";
-  msg.textContent = remaining===0 ? `✅ تم دفع ${newPayment}` : `💰 تم دفع ${newPayment} — الباقي ${remaining}`;
-  document.getElementById("paid").value = "";
-  showClientDetails();
-}
-
-function showReport(){
-  const index = clientSelect.value;
-  if(index==="") return alert("اختر العميل");
-  clientSection.classList.add("hidden");
-  addClientSection.classList.add("hidden");
-  reportSection.classList.remove("hidden");
-  const client = clients[index];
-  document.getElementById("reportClientName").textContent = `تقرير العميل: ${client.name}`;
-
-  const tbody = document.querySelector("#reportProductsTable tbody");
-  tbody.innerHTML = "";
-  client.products.forEach(p=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
-    tbody.appendChild(tr);
-  });
-
-  document.getElementById("reportTotal").textContent = client.total;
-  document.getElementById("reportPaid").textContent = client.paid;
-  document.getElementById("reportRemain").textContent = client.total - client.paid;
-
-  const histBody = document.querySelector("#historyTable tbody");
-  histBody.innerHTML = "";
-  client.history.forEach(h=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${h.date}</td><td>${h.paid}</td>`;
-    histBody.appendChild(tr);
-  });
-}
-
-// ==== ربط الأزرار ====
-addClientBtn.addEventListener("click", showAddClient);
-deleteClientBtn.addEventListener("click", deleteClient);
-addProductBtn.addEventListener("click", addProduct);
-confirmPaymentBtn.addEventListener("click", confirmPayment);
-showReportBtn.addEventListener("click", showReport);
-saveClientBtn.addEventListener("click", saveClient);
-backToClientSectionBtn.addEventListener("click", showClientSection);
-addProductNewClientBtn.addEventListener("click", addProductToNewClient);
-backFromReportBtn.addEventListener("click", showClientSection);
-clientSelect.addEventListener("change", showClientDetails);
-
-// البداية
-fetchClientsOnline();
-showClientSection();
 </script>
 </body>
 </html>

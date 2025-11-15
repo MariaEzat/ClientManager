@@ -162,10 +162,10 @@
 
     <!-- قسم اختيار العملاء -->
     <div id="clientSection">
-      <button id="logoutBtn"
+      <!-- <button id="logoutBtn"
         style="float: right; background:#d9534f; color:white; padding:5px 10px; border:none; border-radius:5px; cursor:pointer;">
         تسجيل خروج
-      </button>
+      </button> -->
 
       <label>اختيار عميل:</label>
       <select id="clientSelect">
@@ -312,9 +312,9 @@
       });
 
       // تسجيل الخروج
-      document.getElementById("logoutBtn").addEventListener("click", () => {
-        auth.signOut().then(() => window.location.href = "login.html");
-      });
+      // document.getElementById("logoutBtn").addEventListener("click", () => {
+      //   auth.signOut().then(() => window.location.href = "login.html");
+      // });
       let clients = [];
       let newClientProducts = [];
 

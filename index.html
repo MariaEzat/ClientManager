@@ -162,6 +162,11 @@
 
     <!-- قسم اختيار العملاء -->
     <div id="clientSection">
+      <button id="logoutBtn"
+        style="float: right; background:#d9534f; color:white; padding:5px 10px; border:none; border-radius:5px; cursor:pointer;">
+        تسجيل خروج
+      </button>
+
       <label>اختيار عميل:</label>
       <select id="clientSelect">
         <option value="">-- اختار عميل --</option>
@@ -297,13 +302,19 @@
 
       // حماية الصفحة
       auth.onAuthStateChanged(user => {
-        if (!user) window.location.replace("login.html");;
+        if (!user) {
+          window.location.replace("login.html");
+        } else {
+          // هنا المستخدم موجود فعليًا
+          fetchClientsOnline();
+          showClientSection();
+        }
       });
 
       // تسجيل الخروج
-      // document.getElementById("logoutBtn").addEventListener("click", () => {
-      //   auth.signOut().then(() => window.location.href = "login.html");
-      // });
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        auth.signOut().then(() => window.location.href = "login.html");
+      });
       let clients = [];
       let newClientProducts = [];
 
@@ -324,15 +335,17 @@
 
       // ==== دوال Firebase ====
       function fetchClientsOnline() {
-        db.ref('clients/').once('value').then(snapshot => {
+        db.ref('clients/' + auth.currentUser.uid).once('value').then(snapshot => {
           clients = snapshot.exists() ? snapshot.val() : [];
           loadClients();
         });
       }
 
       function saveClientsOnline() {
-        db.ref('clients/').set(clients).then(() => console.log("✅ البيانات محفوظة على الإنترنت"));
+        db.ref('clients/' + auth.currentUser.uid).set(clients)
+          .then(() => console.log("✅ البيانات محفوظة على الإنترنت"));
       }
+
 
       // ==== عرض الأقسام ====
       function showClientSection() {
@@ -634,10 +647,6 @@
       backFromReportBtn.addEventListener("click", showClientSection);
       clientSelect.addEventListener("change", showClientDetails);
 
-      // البداية
-      fetchClientsOnline();
-      showClientSection();
-
 
       document.getElementById("downloadPdfBtn").addEventListener("click", () => {
         const { jsPDF } = window.jspdf;
@@ -685,7 +694,7 @@
           backBtn.style.display = "inline-block";
           title.style.marginTop = oldMargin;
         }).catch(err => {
-          
+
           console.error("خطأ في توليد PDF:", err);
           // رجع الزرار لو حصل خطأ
           downloadBtn.style.display = "inline-block";

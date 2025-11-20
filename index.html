@@ -138,6 +138,19 @@
       flex-wrap: wrap;
       gap: 10px;
     }
+/* العمود الأخير (حذف المنتج) */
+th:last-child, td:last-child {
+  width: 25px !important;    /* تقليل العرض للحد الأدنى */
+  padding: 0 !important;     /* إزالة البادينج */
+}
+
+td:last-child button {
+  font-size: 12px !important; /* تصغير الخط */
+  padding: 1px 2px !important; /* تقليل البادينج */
+  min-width: 0 !important;
+  line-height: 1 !important;
+}
+
 
     /* ======= تحسين الموبايل ======= */
     @media (max-width: 600px) {
@@ -149,7 +162,13 @@
       h1 {
         font-size: 22px;
       }
-
+table, th, td {
+    font-size: 12px !important;
+    /* padding: 4px !important; */
+  }
+  th:last-child, td:last-child {
+    width: 25px !important;
+  }
       input,
       select,
       button {
@@ -171,13 +190,11 @@
         gap: 10px;
       }
 
-       table, th, td {
-    font-size: 12px;       /* تصغير الخط */
-    padding: 4px;          /* تصغير البادينج */
-  }
+   
 
   th, td {
     min-width: auto;       /* إزالة الحد الأدنى الواسع */
+    
   }
 
   th:last-child, td:last-child {

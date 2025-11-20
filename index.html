@@ -181,6 +181,8 @@
             <th>الكمية</th>
             <th>السعر</th>
             <th>الإجمالي</th>
+            <th>تاريخ الإضافة</th>
+
             <th>حذف</th>
           </tr>
         </thead>
@@ -230,6 +232,7 @@
             <th>الكمية</th>
             <th>السعر</th>
             <th>الإجمالي</th>
+
           </tr>
         </thead>
         <tbody></tbody>
@@ -254,6 +257,8 @@
             <th>الكمية</th>
             <th>السعر</th>
             <th>الإجمالي</th>
+            <th>تاريخ الإضافة</th>
+
           </tr>
         </thead>
         <tbody></tbody>
@@ -449,11 +454,18 @@
         tbody.innerHTML = "";
         client.products.forEach((p, i) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>
-      <td><button class="btnDelete">🗑️</button></td>`;
+          tr.innerHTML = `
+    <td>${p.name}</td>
+    <td>${p.qty}</td>
+    <td>${p.price}</td>
+    <td>${p.total}</td>
+    <td>${p.dateAdded || '-'}</td> <!-- هنا نعرض التاريخ -->
+    <td><button class="btnDelete">🗑️</button></td>
+  `;
           tr.querySelector("button").addEventListener("click", () => deleteProduct(index, i));
           tbody.appendChild(tr);
         });
+
         document.getElementById("clientTable").classList.remove("hidden");
         document.getElementById("summary").classList.remove("hidden");
         addProductBtn.classList.remove("hidden");
@@ -476,10 +488,16 @@
         const price = Number(document.getElementById("productPrice").value);
         if (!name || qty <= 0 || price <= 0) return alert("أدخل بيانات صحيحة");
 
-        const product = { name, qty, price, total: qty * price };
+        const product = {
+          name,
+          qty,
+          price,
+          total: qty * price,
+          dateAdded: new Date().toLocaleString() // هنا نضيف التاريخ
+        };
+
         newClientProducts.push(product);
 
-        // هل نحن نعدل عميل موجود؟
         const index = clientSelect.value;
         const isExistingClient = index !== "";
 
@@ -493,7 +511,6 @@
 
         renderNewClientTable();
 
-        // مسح الحقول بعد الإضافة
         document.getElementById("productName").value = "";
         document.getElementById("productQty").value = "";
         document.getElementById("productPrice").value = "";
@@ -618,7 +635,13 @@
         tbody.innerHTML = "";
         client.products.forEach(p => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.total}</td>`;
+          tr.innerHTML = `
+    <td>${p.name}</td>
+    <td>${p.qty}</td>
+    <td>${p.price}</td>
+    <td>${p.total}</td>
+    <td>${p.dateAdded || '-'}</td>
+  `;
           tbody.appendChild(tr);
         });
 

@@ -138,18 +138,24 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-/* العمود الأخير (حذف المنتج) */
-th:last-child, td:last-child {
-  width: 25px !important;    /* تقليل العرض للحد الأدنى */
-  padding: 0 !important;     /* إزالة البادينج */
-}
 
-td:last-child button {
-  font-size: 12px !important; /* تصغير الخط */
-  padding: 1px 2px !important; /* تقليل البادينج */
-  min-width: 0 !important;
-  line-height: 1 !important;
-}
+    /* العمود الأخير (حذف المنتج) */
+    th:last-child,
+    td:last-child {
+      width: 25px !important;
+      /* تقليل العرض للحد الأدنى */
+      padding: 0 !important;
+      /* إزالة البادينج */
+    }
+
+    td:last-child button {
+      font-size: 12px !important;
+      /* تصغير الخط */
+      padding: 1px 2px !important;
+      /* تقليل البادينج */
+      min-width: 0 !important;
+      line-height: 1 !important;
+    }
 
 
     /* ======= تحسين الموبايل ======= */
@@ -162,13 +168,19 @@ td:last-child button {
       h1 {
         font-size: 22px;
       }
-table, th, td {
-    font-size: 12px !important;
-    /* padding: 4px !important; */
-  }
-  th:last-child, td:last-child {
-    width: 25px !important;
-  }
+
+      table,
+      th,
+      td {
+        font-size: 12px !important;
+        /* padding: 4px !important; */
+      }
+
+      th:last-child,
+      td:last-child {
+        width: 25px !important;
+      }
+
       input,
       select,
       button {
@@ -190,28 +202,36 @@ table, th, td {
         gap: 10px;
       }
 
-   
 
-  th, td {
-    min-width: auto;       /* إزالة الحد الأدنى الواسع */
-    
-  }
 
-  th:last-child, td:last-child {
-    width: 30px;           /* تقليل عرض عمود الحذف */
-    padding: 2px;
-  }
+      th,
+      td {
+        min-width: auto;
+        /* إزالة الحد الأدنى الواسع */
 
-  td:last-child button {
-    font-size: 14px;       /* تصغير أيقونة الزبالة */
-    padding: 2px;
-  }
+      }
 
-  table {
-    display: table;        /* منع الـ scroll block */
-    overflow-x: hidden;    /* إزالة scroll أفقي */
-    table-layout: auto;    /* السماح للجدول بتقسيم العرض بشكل مناسب */
-  }
+      th:last-child,
+      td:last-child {
+        width: 30px;
+        /* تقليل عرض عمود الحذف */
+        padding: 2px;
+      }
+
+      td:last-child button {
+        font-size: 14px;
+        /* تصغير أيقونة الزبالة */
+        padding: 2px;
+      }
+
+      table {
+        display: table;
+        /* منع الـ scroll block */
+        overflow-x: hidden;
+        /* إزالة scroll أفقي */
+        table-layout: auto;
+        /* السماح للجدول بتقسيم العرض بشكل مناسب */
+      }
     }
 
     /* تحسين جمالية الأزرار الصغيرة على الموبايل */
@@ -760,57 +780,57 @@ table, th, td {
       clientSelect.addEventListener("change", showClientDetails);
 
 
-     document.getElementById("downloadPdfBtn").addEventListener("click", () => {
-  const { jsPDF } = window.jspdf;
-  const element = document.getElementById("reportSection");
+      document.getElementById("downloadPdfBtn").addEventListener("click", () => {
+        const { jsPDF } = window.jspdf;
+        const element = document.getElementById("reportSection");
 
-  const downloadBtn = document.getElementById("downloadPdfBtn");
-  const backBtn = document.getElementById("backFromReportBtn");
-  downloadBtn.style.display = "none";
-  backBtn.style.display = "none";
+        const downloadBtn = document.getElementById("downloadPdfBtn");
+        const backBtn = document.getElementById("backFromReportBtn");
+        downloadBtn.style.display = "none";
+        backBtn.style.display = "none";
 
-  const table = document.getElementById("reportProductsTable");
-  const oldDisplay = table.style.display;
-  const oldOverflow = table.style.overflowX;
+        const table = document.getElementById("reportProductsTable");
+        const oldDisplay = table.style.display;
+        const oldOverflow = table.style.overflowX;
 
-  // اجعل الجدول block كامل ليظهر كل الأعمدة
-  table.style.display = "table";
-  table.style.overflowX = "visible";
+        // اجعل الجدول block كامل ليظهر كل الأعمدة
+        table.style.display = "table";
+        table.style.overflowX = "visible";
 
-  const clientName = document.getElementById("reportClientName").textContent.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "_");
+        const clientName = document.getElementById("reportClientName").textContent.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "_");
 
-  html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+        html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const imgProps = pdf.getImageProperties(imgData);
-    const imgWidth = pageWidth - 20; // 10mm margin
-    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+          const imgProps = pdf.getImageProperties(imgData);
+          const imgWidth = pageWidth - 20; // 10mm margin
+          const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-    let heightLeft = imgHeight;
-    let position = 10;
+          let heightLeft = imgHeight;
+          let position = 10;
 
-    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight - 20;
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight - 20;
 
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight + 10;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight - 20;
-    }
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight - 20;
+          }
 
-    pdf.save(`${clientName}.pdf`);
+          pdf.save(`${clientName}.pdf`);
 
-    // رجع كل شيء للوضع الطبيعي
-    downloadBtn.style.display = "inline-block";
-    backBtn.style.display = "inline-block";
-    table.style.display = oldDisplay;
-    table.style.overflowX = oldOverflow;
-  });
-});
+          // رجع كل شيء للوضع الطبيعي
+          downloadBtn.style.display = "inline-block";
+          backBtn.style.display = "inline-block";
+          table.style.display = oldDisplay;
+          table.style.overflowX = oldOverflow;
+        });
+      });
 
     </script>
 </body>

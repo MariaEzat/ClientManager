@@ -142,8 +142,8 @@
     /* ======= تحسين الموبايل ======= */
     @media (max-width: 600px) {
       .container {
-        padding: 15px;
-        margin: 10px;
+        padding: 10px;
+        margin: 5px;
       }
 
       h1 {
@@ -171,21 +171,30 @@
         gap: 10px;
       }
 
-      table,
-      th,
-      td {
-        font-size: 13px;
-      }
+       table, th, td {
+    font-size: 12px;       /* تصغير الخط */
+    padding: 4px;          /* تصغير البادينج */
+  }
 
-      table {
-        overflow-x: auto;
-        display: block;
-      }
+  th, td {
+    min-width: auto;       /* إزالة الحد الأدنى الواسع */
+  }
 
-      th,
-      td {
-        min-width: 80px;
-      }
+  th:last-child, td:last-child {
+    width: 30px;           /* تقليل عرض عمود الحذف */
+    padding: 2px;
+  }
+
+  td:last-child button {
+    font-size: 14px;       /* تصغير أيقونة الزبالة */
+    padding: 2px;
+  }
+
+  table {
+    display: table;        /* منع الـ scroll block */
+    overflow-x: hidden;    /* إزالة scroll أفقي */
+    table-layout: auto;    /* السماح للجدول بتقسيم العرض بشكل مناسب */
+  }
     }
 
     /* تحسين جمالية الأزرار الصغيرة على الموبايل */

@@ -400,6 +400,9 @@
           window.location.replace("login.html");
         } else {
           // هنا المستخدم موجود فعليًا
+          // نحذف عنصر محدد من LocalStorage
+localStorage.removeItem("clients");  // هنا "clients" هو المفتاح اللي حابة تمسحيه
+
           fetchClientsOnline();
           showClientSection();
         }

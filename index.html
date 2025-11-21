@@ -400,10 +400,6 @@
           window.location.replace("login.html");
         } else {
           // هنا المستخدم موجود فعليًا
-          const localClients = loadClientsFromLocalStorage();
-if (localClients && localClients.length) {
-  clients = localClients;
-}
           fetchClientsOnline();
           showClientSection();
         }
@@ -623,64 +619,49 @@ if (localClients && localClients.length) {
       }
 
       // ================== استبدال: saveClient ==================
- // دالة حفظ العملاء في LocalStorage
-function saveClientsLocal() {
-    localStorage.setItem("clients", JSON.stringify(clients));
-}
+      function saveClient() {
+        const name = document.getElementById("clientNameInput").value.trim();
+        const codeStr = document.getElementById("clientCodeInput").value.trim();
+        if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
+        if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
+        const code = Number(codeStr);
 
-// دالة الحفظ الأساسية — بعد التعديل
-function saveClient() {
-    const name = document.getElementById("clientNameInput").value.trim();
-    const codeStr = document.getElementById("clientCodeInput").value.trim();
+        if (!name) return alert("أدخل اسم العميل");
+        if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
 
-    if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
-    if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
-    const code = Number(codeStr);
+        // هل العميل موجود؟
+        const existingIndex = clients.findIndex(c => Number(c.code) === code);
 
-    if (!name) return alert("أدخل اسم العميل");
-    if (newClientProducts.length === 0) return alert("أضف منتج واحد على الأقل");
+        if (existingIndex !== -1) {
+          // تحديث بيانات العميل الموجود
+          const client = clients[existingIndex];
+          client.name = name;
+          client.products = [...newClientProducts];
+          client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
 
-    // هل العميل موجود؟
-    const existingIndex = clients.findIndex(c => Number(c.code) === code);
+          // التأكد من وجود الحقول الضرورية
+          if (client.paid === undefined) client.paid = 0;
+          if (!Array.isArray(client.history)) client.history = [];
 
-    if (existingIndex !== -1) {
-        // تحديث بيانات العميل
-        const client = clients[existingIndex];
-        client.name = name;
-        client.products = [...newClientProducts];
-        client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
-
-        if (client.paid === undefined) client.paid = 0;
-        if (!Array.isArray(client.history)) client.history = [];
-
-        // حفظ Online + Local
-        saveClientsOnline();
-        saveClientsLocal();
-
-        alert("✅ تم تحديث بيانات العميل");
-
-    } else {
-        // إضافة عميل جديد
-        const client = {
+          saveClientsOnline();
+          alert("✅ تم تحديث بيانات العميل");
+        } else {
+          // إضافة عميل جديد
+          const client = {
             code: code,
             name: name,
             products: newClientProducts.map(p => ({ ...p })),
             total: newClientProducts.reduce((sum, p) => sum + p.total, 0),
             paid: 0,
             history: []
-        };
+          };
+          clients.push(client);
+          saveClientsOnline();
+          alert("✅ تم حفظ العميل");
+        }
 
-        clients.push(client);
-
-        // حفظ Online + Local
-        saveClientsOnline();
-        saveClientsLocal();
-
-        alert("✅ تم حفظ العميل");
-    }
-
-    showClientSection();
-}
+        showClientSection();
+      }
 
       function deleteClient() {
         const index = clientSelect.value;
@@ -850,36 +831,6 @@ function saveClient() {
           table.style.overflowX = oldOverflow;
         });
       });
-
-// حفظ المصفوفة الحالية من المتغيّر `clients` في localStorage
-function saveClientsLocal() {
-  try {
-    localStorage.setItem("clients", JSON.stringify(clients));
-  } catch (e) {
-    console.error("Error saving clients to localStorage:", e);
-  }
-}
-
-// تحميل العملاء من localStorage (يرجع مصفوفة أو [])
-function loadClientsFromLocalStorage() {
-  try {
-    return JSON.parse(localStorage.getItem("clients")) || [];
-  } catch (e) {
-    console.error("Error reading clients from localStorage:", e);
-    return [];
-  }
-}
-
-// حذف عميل محليًا حسب index وتحديث التخزين المحلي
-function deleteClientFromLocalStorage(index) {
-  try {
-    const arr = JSON.parse(localStorage.getItem("clients")) || [];
-    arr.splice(index, 1);
-    localStorage.setItem("clients", JSON.stringify(arr));
-  } catch (e) {
-    console.error("Error deleting client from localStorage:", e);
-  }
-}
 
     </script>
 </body>

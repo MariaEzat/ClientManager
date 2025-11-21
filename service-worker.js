@@ -1,43 +1,35 @@
-const cacheName = "my-site-cache-v2"; // رقم النسخة يتغير عند تحديث الملفات
-const filesToCache = [
+const CACHE_NAME = "client-manager-cache-v1";
+
+// هنا هتحطي كل ملفات الموقع الأساسية اللي محتاجة تشتغل offline
+const urlsToCache = [
   "/",
   "/index.html",
-  "/add-Client.html",
-  "/report.html",
-  "/manifest.json",
-  "/icon.png"
+  "/style.css",
+  "/app.js",
+  "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js",
+  "https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js",
+  "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
 ];
 
-// أناء التثبيت (install)
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(cacheName).then(cache => cache.addAll(filesToCache))
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
+    })
   );
+  self.skipWaiting();
 });
 
-// تنظيف الكاش القديم عند التفعيل
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== cacheName) return caches.delete(key);
-        })
-      )
-    )
-  );
+  event.waitUntil(self.clients.claim());
 });
 
-// التعامل مع fetch
 self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
-
   event.respondWith(
-    caches.match(event.request).then(response => {
-      if (response) return response;
-      return fetch(event.request).catch(() =>
-        new Response("صفحة غير متاحة بدون إنترنت", { status: 404, statusText: "Offline" })
-      );
+    caches.match(event.request).then(resp => {
+      return resp || fetch(event.request);
     })
   );
 });

@@ -247,7 +247,7 @@
 
 <body>
   <div class="container">
-    <h1>📋 إدارة  والمبيعات</h1>
+    <h1>📋 إدارة العملاء والمبيعات</h1>
 
     <!-- قسم اختيار العملاء -->
     <div id="clientSection">
@@ -400,8 +400,12 @@
           window.location.replace("login.html");
         } else {
           // هنا المستخدم موجود فعليًا
-          // نحذف عنصر محدد من LocalStorage
-localStorage.removeItem("clients");  // هنا "clients" هو المفتاح اللي حابة تمسحيه
+          // عند بداية التشغيل نحمّل النسخة المحفوظة محليًا كـ fallback
+          const localClients = loadClientsFromLocalStorage();
+          if (localClients && localClients.length) {
+            clients = localClients;
+          }
+
 
           fetchClientsOnline();
           showClientSection();
@@ -622,9 +626,16 @@ localStorage.removeItem("clients");  // هنا "clients" هو المفتاح ا�
       }
 
       // ================== استبدال: saveClient ==================
+      // دالة حفظ العملاء في LocalStorage
+      function saveClientsLocal() {
+        localStorage.setItem("clients", JSON.stringify(clients));
+      }
+
+      // دالة الحفظ الأساسية — بعد التعديل
       function saveClient() {
         const name = document.getElementById("clientNameInput").value.trim();
         const codeStr = document.getElementById("clientCodeInput").value.trim();
+
         if (!codeStr) return alert("أدخل كود العميل (أرقام فقط)");
         if (!/^\d+$/.test(codeStr)) return alert("الكود لازم يكون أرقام فقط");
         const code = Number(codeStr);
@@ -636,18 +647,21 @@ localStorage.removeItem("clients");  // هنا "clients" هو المفتاح ا�
         const existingIndex = clients.findIndex(c => Number(c.code) === code);
 
         if (existingIndex !== -1) {
-          // تحديث بيانات العميل الموجود
+          // تحديث بيانات العميل
           const client = clients[existingIndex];
           client.name = name;
           client.products = [...newClientProducts];
           client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
 
-          // التأكد من وجود الحقول الضرورية
           if (client.paid === undefined) client.paid = 0;
           if (!Array.isArray(client.history)) client.history = [];
 
+          // حفظ Online + Local
           saveClientsOnline();
+          saveClientsLocal();
+
           alert("✅ تم تحديث بيانات العميل");
+
         } else {
           // إضافة عميل جديد
           const client = {
@@ -658,8 +672,13 @@ localStorage.removeItem("clients");  // هنا "clients" هو المفتاح ا�
             paid: 0,
             history: []
           };
+
           clients.push(client);
+
+          // حفظ Online + Local
           saveClientsOnline();
+          saveClientsLocal();
+
           alert("✅ تم حفظ العميل");
         }
 
@@ -834,6 +853,37 @@ localStorage.removeItem("clients");  // هنا "clients" هو المفتاح ا�
           table.style.overflowX = oldOverflow;
         });
       });
+
+
+      // حفظ المصفوفة الحالية من المتغيّر `clients` في localStorage
+      function saveClientsLocal() {
+        try {
+          localStorage.setItem("clients", JSON.stringify(clients));
+        } catch (e) {
+          console.error("Error saving clients to localStorage:", e);
+        }
+      }
+
+      // تحميل العملاء من localStorage (يرجع مصفوفة أو [])
+      function loadClientsFromLocalStorage() {
+        try {
+          return JSON.parse(localStorage.getItem("clients")) || [];
+        } catch (e) {
+          console.error("Error reading clients from localStorage:", e);
+          return [];
+        }
+      }
+
+      // حذف عميل محليًا حسب index وتحديث التخزين المحلي
+      function deleteClientFromLocalStorage(index) {
+        try {
+          const arr = JSON.parse(localStorage.getItem("clients")) || [];
+          arr.splice(index, 1);
+          localStorage.setItem("clients", JSON.stringify(arr));
+        } catch (e) {
+          console.error("Error deleting client from localStorage:", e);
+        }
+      }
 
     </script>
 </body>

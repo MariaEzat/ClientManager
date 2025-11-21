@@ -303,7 +303,7 @@
 
 
       <label>رقم العميل:</label>
-      <input type="text" id="clientCodeInput" placeholder="اكتب رقم العميل" />
+      <input type="number" id="clientCodeInput" placeholder="اكتب رقم العميل" />
 
 
       <label>اسم المنتج:</label>
@@ -625,7 +625,7 @@
         document.getElementById("totalPrice").textContent = totalPrice;
       }
 
-    
+
       // دالة الحفظ الأساسية — بعد التعديل
       function saveClient() {
         const name = document.getElementById("clientNameInput").value.trim();
@@ -642,6 +642,10 @@
         const existingIndex = clients.findIndex(c => Number(c.code) === code);
 
         if (existingIndex !== -1) {
+          // العميل موجود مسبقًا
+          const confirmUpdate = confirm("⚠️ هذا الرقم موجود بالفعل. هل تريد تحديث بيانات العميل؟");
+          if (!confirmUpdate) return; // المستخدم ضغط Cancel
+
           // تحديث بيانات العميل
           const client = clients[existingIndex];
           client.name = name;
@@ -656,7 +660,6 @@
           saveClientsLocal();
 
           alert("✅ تم تحديث بيانات العميل");
-
         } else {
           // إضافة عميل جديد
           const client = {
@@ -870,7 +873,7 @@
         }
       }
 
-    
+
     </script>
 
 

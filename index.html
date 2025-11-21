@@ -625,12 +625,7 @@
         document.getElementById("totalPrice").textContent = totalPrice;
       }
 
-      // ================== استبدال: saveClient ==================
-      // دالة حفظ العملاء في LocalStorage
-      function saveClientsLocal() {
-        localStorage.setItem("clients", JSON.stringify(clients));
-      }
-
+    
       // دالة الحفظ الأساسية — بعد التعديل
       function saveClient() {
         const name = document.getElementById("clientNameInput").value.trim();
@@ -691,6 +686,7 @@
         if (confirm(`هل تريد حذف ${clients[index].name}?`)) {
           clients.splice(index, 1);
           saveClientsOnline();
+          saveClientsLocal();
           showClientSection();
         }
       }
@@ -874,17 +870,7 @@
         }
       }
 
-      // حذف عميل محليًا حسب index وتحديث التخزين المحلي
-      function deleteClientFromLocalStorage(index) {
-        try {
-          const arr = JSON.parse(localStorage.getItem("clients")) || [];
-          arr.splice(index, 1);
-          localStorage.setItem("clients", JSON.stringify(arr));
-        } catch (e) {
-          console.error("Error deleting client from localStorage:", e);
-        }
-      }
-
+    
     </script>
 </body>
 

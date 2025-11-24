@@ -36,6 +36,11 @@
       display: block;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
+
     input,
     select {
       width: 100%;
@@ -371,6 +376,35 @@
       </table>
       <button id="backFromReportBtn">⬅️ رجوع</button>
     </div>
+    <div id="editPaymentPopup" class="hidden" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+">
+      <div style="
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  ">
+        <h3>تعديل المبلغ</h3>
+        <input type="number" id="editPaymentInput" placeholder="اكتب المبلغ الجديد"
+          style="width: 100%; padding: 8px; margin: 10px 0; font-size: 16px;">
+        <div style="display: flex; justify-content: space-between;">
+          <button id="savePaymentBtn"
+            style="background:#3a6ea5;color:white;padding:8px 15px;border:none;border-radius:5px;cursor:pointer;">حفظ</button>
+          <button id="cancelPaymentBtn"
+            style="background:#d9534f;color:white;padding:8px 15px;border:none;border-radius:5px;cursor:pointer;">إلغاء</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -433,6 +467,12 @@
       const backToClientSectionBtn = document.getElementById("backToClientSectionBtn");
       const addProductNewClientBtn = document.getElementById("addProductNewClientBtn");
       const backFromReportBtn = document.getElementById("backFromReportBtn");
+      const editPaymentPopup = document.getElementById("editPaymentPopup");
+      const editPaymentInput = document.getElementById("editPaymentInput");
+      const savePaymentBtn = document.getElementById("savePaymentBtn");
+      const cancelPaymentBtn = document.getElementById("cancelPaymentBtn");
+
+      let currentEditIndex = null; // أي دفعة نعدل
 
       // ==== دوال Firebase ====
       function fetchClientsOnline() {
@@ -779,9 +819,22 @@
 
         const histBody = document.querySelector("#historyTable tbody");
         histBody.innerHTML = "";
-        client.history.forEach(h => {
+        client.history.forEach((h, i) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${h.date}</td><td>${h.paid}</td>`;
+          const tdDate = document.createElement("td");
+          tdDate.textContent = h.date;
+
+          const tdPaid = document.createElement("td");
+          tdPaid.textContent = h.paid;
+          tdPaid.style.cursor = "pointer";
+          tdPaid.addEventListener("click", () => {
+            currentEditIndex = i;
+            editPaymentInput.value = h.paid;
+            editPaymentPopup.classList.remove("hidden");
+          });
+
+          tr.appendChild(tdDate);
+          tr.appendChild(tdPaid);
           histBody.appendChild(tr);
         });
       }
@@ -870,6 +923,25 @@
           return [];
         }
       }
+      savePaymentBtn.addEventListener("click", () => {
+        const newPaid = Number(editPaymentInput.value);
+        if (isNaN(newPaid) || newPaid < 0) return alert("أدخل مبلغ صحيح");
+
+        const index = clientSelect.value;
+        const client = clients[index];
+
+        client.history[currentEditIndex].paid = newPaid;
+        client.paid = client.history.reduce((sum, p) => sum + p.paid, 0);
+
+        saveClientsOnline();
+        saveClientsLocal();
+        showReport();
+        editPaymentPopup.classList.add("hidden");
+      });
+
+      cancelPaymentBtn.addEventListener("click", () => {
+        editPaymentPopup.classList.add("hidden");
+      });
 
 
     </script>

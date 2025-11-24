@@ -930,7 +930,15 @@
         const index = clientSelect.value;
         const client = clients[index];
 
-        client.history[currentEditIndex].paid = newPaid;
+        if (newPaid === 0) {
+          // حذف السطر بالكامل
+          client.history.splice(currentEditIndex, 1);
+        } else {
+          // تعديل القيمة
+          client.history[currentEditIndex].paid = newPaid;
+        }
+
+        // إعادة حساب الإجمالي المدفوع
         client.paid = client.history.reduce((sum, p) => sum + p.paid, 0);
 
         saveClientsOnline();
@@ -938,6 +946,7 @@
         showReport();
         editPaymentPopup.classList.add("hidden");
       });
+
 
       cancelPaymentBtn.addEventListener("click", () => {
         editPaymentPopup.classList.add("hidden");

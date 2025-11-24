@@ -641,28 +641,30 @@
         // هل العميل موجود؟
         const existingIndex = clients.findIndex(c => Number(c.code) === code);
 
-        if (existingIndex !== -1) {
-          // العميل موجود مسبقًا
-          const confirmUpdate = confirm("⚠️ هذا الرقم موجود بالفعل. هل تريد تحديث بيانات العميل؟");
-          if (!confirmUpdate) return; // المستخدم ضغط Cancel
+        const isEditingExistingClient = document.getElementById("clientCodeInput").readOnly;
+        // لو readOnly يبقى العميل موجود من قبل (تم اختياره من select)
 
+        if (existingIndex !== -1 && !isEditingExistingClient) {
+          // العميل موجود مسبقًا، فقط عند إضافة عميل جديد
+          const confirmUpdate = confirm("⚠️ هذا الرقم موجود بالفعل. هل تريد تحديث بيانات العميل؟");
+          if (!confirmUpdate) return;
+        }
+
+        let client;
+        if (existingIndex !== -1) {
           // تحديث بيانات العميل
-          const client = clients[existingIndex];
+          client = clients[existingIndex];
           client.name = name;
           client.products = [...newClientProducts];
           client.total = newClientProducts.reduce((sum, p) => sum + p.total, 0);
-
           if (client.paid === undefined) client.paid = 0;
           if (!Array.isArray(client.history)) client.history = [];
-
-          // حفظ Online + Local
           saveClientsOnline();
           saveClientsLocal();
-
           alert("✅ تم تحديث بيانات العميل");
         } else {
           // إضافة عميل جديد
-          const client = {
+          client = {
             code: code,
             name: name,
             products: newClientProducts.map(p => ({ ...p })),
@@ -670,13 +672,9 @@
             paid: 0,
             history: []
           };
-
           clients.push(client);
-
-          // حفظ Online + Local
           saveClientsOnline();
           saveClientsLocal();
-
           alert("✅ تم حفظ العميل");
         }
 

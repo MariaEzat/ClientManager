@@ -497,6 +497,15 @@
         document.getElementById("summary").classList.add("hidden");
         addProductBtn.classList.add("hidden");
         loadClients();
+        const savedClient = localStorage.getItem("selectedClientNumber");
+        if (savedClient) {
+          const index = clients.findIndex(c => c.code == savedClient);
+          if (index !== -1) {
+            clientSelect.value = index;
+            showClientDetails(); // عرض بيانات العميل المحدد
+          }
+          localStorage.removeItem("selectedClientNumber");
+        }
       }
 
       function showAddClient() {
@@ -717,6 +726,7 @@
           saveClientsLocal();
           alert("✅ تم حفظ العميل");
         }
+        localStorage.setItem("selectedClientNumber", client.code);
 
         showClientSection();
       }
@@ -945,6 +955,7 @@
         saveClientsLocal();
         showReport();
         editPaymentPopup.classList.add("hidden");
+
       });
 
 
